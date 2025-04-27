@@ -169,13 +169,17 @@ export default function ManageSemesters() {
                   <td>
                     <button className={Table.infoButton}>
                       <Link
-                        to={`/SuperAdminRole/ManageSemesters/InfoSemester/${semester.id}`}
+                        to={`/SuperAdminRole/ManageSemesters/InfoEashSemester/${semester.id}`}
                       >
                         <i className="fa-solid fa-circle-info"></i>
                       </Link>
                     </button>
                     <button className={Table.editButton}>
-                      <i className="fas fa-edit"></i>
+                      <Link
+                        to={`/SuperAdminRole/ManageSemesters/EditSemester/${semester.id}`}
+                      >
+                        <i className="fas fa-edit"></i>
+                      </Link>
                     </button>
                     <button
                       className={Table.deleteButton}

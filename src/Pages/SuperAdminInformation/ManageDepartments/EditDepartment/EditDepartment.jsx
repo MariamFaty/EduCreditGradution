@@ -4,6 +4,7 @@ import AddText from "../../../../Shared/Css/AddTextDesign.module.css";
 import ButtonDesign from "../../../../Shared/Css/ButtonDesign.module.css";
 import { authContext } from "./../../../../Context/AuthContextProvider";
 import { useFormik } from "formik";
+import * as Yup from "yup";
 import axios from "axios";
 import { baseUrl } from "../../../../Env/Env";
 import { useNavigate, useParams } from "react-router-dom";
@@ -16,9 +17,7 @@ export default function EditDepartment() {
   const navigate = useNavigate();
   const [error, setError] = useState(null);
   const { departmentId } = useParams();
-  const [isLoading, setIsLoading] = useState(false); // للتحكم في الـ spinner
 
-  // ✅ استدعاء البيانات عند تحميل الصفحة
   useEffect(() => {
     fetchDepartments();
     fetchTeacherHead();
@@ -40,6 +39,7 @@ export default function EditDepartment() {
       setError(error.message);
     }
   }
+
   async function fetchTeacherHead() {
     try {
       const response = await axios.get(
@@ -61,17 +61,28 @@ export default function EditDepartment() {
 
   const formik = useFormik({
     initialValues: {
-      name: departments.name,
-      departmentHeadId: "", // ID بتاع رئيس القسم
+      name: departments.name || "",
+      departmentHeadId: "",
     },
+    enableReinitialize: true,
+    validationSchema: Yup.object({
+      name: Yup.string()
+        .matches(/^[A-Za-z\s]+$/, "Name must contain only letters and spaces")
+        .required("Department name is required"),
+    }),
     onSubmit: async (values) => {
       try {
+        const payload = {
+          name: values.name,
+        };
+
+        if (values.departmentHeadId) {
+          payload.departmentHeadId = values.departmentHeadId;
+        }
+
         const response = await axios.put(
           `${baseUrl}Department/${departmentId}`,
-          {
-            name: values.name,
-            departmentHeadId: values.departmentHeadId, // تأكد من الاسم اللي الـ API عايزه
-          },
+          payload,
           {
             headers: {
               Accept: "text/plain",
@@ -81,10 +92,12 @@ export default function EditDepartment() {
         );
 
         console.log("Updated successfully:", response.data);
-        navigate("/SuperAdminRole/ManageDepartments"); // لو عايز يرجع لصفحة الأقسام بعد التعديل
+        navigate("/SuperAdminRole/ManageDepartments");
       } catch (error) {
         console.error("Error updating department:", error);
-        setError("Failed to update department");
+        setError(
+          error.response?.data?.message || "Failed to update department"
+        );
       }
     },
   });
@@ -105,26 +118,25 @@ export default function EditDepartment() {
             id="name"
             name="name"
             onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
             value={formik.values.name}
-            required
           />
           {formik.errors.name && formik.touched.name && (
             <p className="text-red-500 text-sm">{formik.errors.name}</p>
           )}
         </div>
 
-        {/* ✅ قائمة اختيار رئيس القسم */}
+        {/* Department Head (optional) */}
         <div className={Inputs.inputContainer}>
-          <label htmlFor="departmentHead">Department Head</label>
+          <label htmlFor="departmentHeadId">Department Head</label>
           <select
             id="departmentHeadId"
             name="departmentHeadId"
             onChange={formik.handleChange}
             value={formik.values.departmentHeadId}
-            required
           >
-            <option value="" disabled>
-              {departments.departmentHeadFullName}
+            <option value="">
+              {departments.departmentHeadFullName || "Choose a Department Head"}
             </option>
             {teachers?.length > 0 &&
               teachers.map((teacher) => (
@@ -135,12 +147,12 @@ export default function EditDepartment() {
           </select>
         </div>
 
-        {/* ✅ زر الحفظ */}
+        {/* Submit Button */}
         <div className={ButtonDesign.button}>
           <button type="submit">Edit</button>
         </div>
 
-        {/* ✅ عرض الخطأ إن وجد */}
+        {/* Error Message */}
         {error && <p style={{ color: "red" }}>Error: {error}</p>}
       </div>
     </form>

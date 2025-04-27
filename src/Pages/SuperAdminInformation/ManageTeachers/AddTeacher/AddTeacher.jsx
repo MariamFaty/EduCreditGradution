@@ -17,7 +17,6 @@ export default function AddTeacher() {
   const [isLoading, setIsLoading] = useState(false);
   const [departments, setDepartments] = useState([]);
 
-  // ✅ جلب الأقسام
   const fetchDepartments = async () => {
     try {
       const response = await axios.get(`${baseUrl}Department`, {
@@ -36,7 +35,6 @@ export default function AddTeacher() {
     fetchDepartments();
   }, []);
 
-  // ✅ التحقق من صحة الإدخال
   const validateSchema = Yup.object().shape({
     fullName: Yup.string()
       .matches(/^[A-Za-z\s]{3,50}$/, "Full name must be 3-50 letters.")
@@ -63,7 +61,6 @@ export default function AddTeacher() {
     departmentId: Yup.string().required("Department is required"),
   });
 
-  // ✅ Formik إعداد
   const formik = useFormik({
     initialValues: {
       fullName: "",
@@ -94,7 +91,7 @@ export default function AddTeacher() {
         if (response.status === 200 || response.status === 201) {
           alert("Teacher added successfully!");
           resetForm();
-          navigate("/SuperAdminRole/ManageTeachers"); // ✅ التوجيه بعد النجاح
+          navigate("/SuperAdminRole/ManageTeachers");
         } else {
           throw new Error("Failed to add Teacher");
         }
@@ -125,7 +122,9 @@ export default function AddTeacher() {
           onBlur={formik.handleBlur}
         />
         {formik.touched.fullName && formik.errors.fullName && (
-          <div className="error">{formik.errors.fullName}</div>
+          <div className="text-red-500 text-sm mt-1">
+            {formik.errors.fullName}
+          </div>
         )}
       </div>
 
@@ -141,7 +140,9 @@ export default function AddTeacher() {
           onBlur={formik.handleBlur}
         />
         {formik.touched.address && formik.errors.address && (
-          <div className="error">{formik.errors.address}</div>
+          <div className="text-red-500 text-sm mt-1">
+            {formik.errors.address}
+          </div>
         )}
       </div>
 
@@ -158,7 +159,9 @@ export default function AddTeacher() {
             onBlur={formik.handleBlur}
           />
           {formik.touched.phoneNumber && formik.errors.phoneNumber && (
-            <div className="error">{formik.errors.phoneNumber}</div>
+            <div className="text-red-500 text-sm mt-1">
+              {formik.errors.phoneNumber}
+            </div>
           )}
         </div>
 
@@ -173,7 +176,9 @@ export default function AddTeacher() {
             onBlur={formik.handleBlur}
           />
           {formik.touched.nationalId && formik.errors.nationalId && (
-            <div className="error">{formik.errors.nationalId}</div>
+            <div className="text-red-500 text-sm mt-1">
+              {formik.errors.nationalId}
+            </div>
           )}
         </div>
       </div>
@@ -190,7 +195,7 @@ export default function AddTeacher() {
           onBlur={formik.handleBlur}
         />
         {formik.touched.email && formik.errors.email && (
-          <div className="error">{formik.errors.email}</div>
+          <div className="text-red-500 text-sm mt-1">{formik.errors.email}</div>
         )}
       </div>
 
@@ -213,7 +218,9 @@ export default function AddTeacher() {
           ))}
         </select>
         {formik.touched.departmentId && formik.errors.departmentId && (
-          <div className="error">{formik.errors.departmentId}</div>
+          <div className="text-red-500 text-sm mt-1">
+            {formik.errors.departmentId}
+          </div>
         )}
       </div>
 

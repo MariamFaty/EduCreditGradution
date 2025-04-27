@@ -71,7 +71,7 @@ export default function PersonalInformation() {
   return (
     <div className={Information.personalInfoContainer}>
       <h1 className={Information.welcomeTitle}>
-        Welcome, {userData.name?.split(" ")[0] || "30301271701882"}
+        Welcome, {userData.name?.split(" ")[0] || "Loading..."}
       </h1>
 
       <div className={`${Information.line}`}></div>
@@ -79,49 +79,49 @@ export default function PersonalInformation() {
       <div className={Information.row}>
         <span className={`${Information.Lable}`}>Name</span>
         <span className={`${Information.data}`}>
-          {userData.name || "30301271701882"}
+          {userData.name || "Loading..."}
         </span>
       </div>
 
       <div className={Information.row}>
         <span className={`${Information.Lable}`}>Phone Number</span>
         <span className={`${Information.data}`}>
-          {userData.phoneNumber || "30301271701882"}
+          {userData.phoneNumber || "Loading..."}
         </span>
       </div>
 
       <div className={Information.row}>
         <span className={`${Information.Lable}`}>Gender</span>
         <span className={`${Information.data}`}>
-          {userData.gender || "30301271701882"}
+          {userData.gender || "Loading..."}
         </span>
       </div>
 
       <div className={Information.row}>
         <span className={`${Information.Lable}`}>Email</span>
         <span className={`${Information.data}`}>
-          {userData.email || "30301271701882"}
+          {userData.email || "Loading..."}
         </span>
       </div>
 
       <div className={Information.row}>
         <span className={`${Information.Lable}`}>Birth Date</span>
         <span className={`${Information.data}`}>
-          {userData.birthDate || "30301271701882"}
+          {userData.birthDate || "Loading..."}
         </span>
       </div>
 
       <div className={Information.row}>
         <span className={`${Information.Lable}`}>Address</span>
         <span className={`${Information.data}`}>
-          {userData.address || "30301271701882"}
+          {userData.address || "Loading..."}
         </span>
       </div>
 
       <div className={Information.row}>
         <span className={`${Information.Lable}`}>National ID</span>
         <span className={`${Information.data}`}>
-          {userData.nationalId || "30301271701882"}
+          {userData.nationalId || "Loading..."}
         </span>
       </div>
     </div>

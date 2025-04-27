@@ -154,7 +154,11 @@ export default function ManageAdmins() {
                       </Link>
                     </button>
                     <button className={Table.editButton}>
-                      <i className="fas fa-edit"></i>
+                      <Link
+                        to={`/SuperAdminRole/ManageAdmins/EditAdmin/${admin.id}`}
+                      >
+                        <i className="fas fa-edit"></i>{" "}
+                      </Link>
                     </button>
                     <button
                       className={Table.deleteButton}

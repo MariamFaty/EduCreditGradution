@@ -7,13 +7,24 @@ import { useFormik } from "formik";
 import axios from "axios";
 import { baseUrl } from "../../../../Env/Env";
 import * as Yup from "yup";
+import {
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Checkbox,
+  ListItemText,
+  OutlinedInput,
+  FormHelperText,
+} from "@mui/material";
+import { Navigate, useNavigate } from "react-router-dom";
 
 export default function AddSemester() {
   const { accessToken } = useContext(authContext);
   const [departments, setDepartments] = useState([]);
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
-  // Fetch departments and their courses from the endpoint
   const fetchDepartmentsWithCourses = async () => {
     try {
       const res = await axios.get(
@@ -25,10 +36,9 @@ export default function AddSemester() {
           },
         }
       );
-      setDepartments(res.data.result); // Assuming result contains the array of departments with courses
+      setDepartments(res.data.result);
     } catch (error) {
       console.error("Error fetching departments with courses:", error);
-      setError("Failed to fetch departments and courses.");
     }
   };
 
@@ -44,29 +54,32 @@ export default function AddSemester() {
       enrollmentOpen: "",
       enrollmentClose: "",
       departmentId: "",
-      courseId: "",
+      courseIds: [],
     },
     validationSchema: Yup.object({
       semesterType: Yup.string().required("Semester Type is required"),
       startDate: Yup.date().required("Start Date is required"),
       endDate: Yup.date().required("End Date is required"),
-      enrollmentOpen: Yup.date().required("Enrollment Open is required"),
-      enrollmentClose: Yup.date().required("Enrollment Close is required"),
+      enrollmentOpen: Yup.string().required(
+        "Enrollment Open date and time are required"
+      ),
+      enrollmentClose: Yup.string().required(
+        "Enrollment Close date and time are required"
+      ),
       departmentId: Yup.string().required("Department is required"),
-      courseId: Yup.string().required("Course is required"),
+      courseIds: Yup.array().min(1, "At least one course is required"),
     }),
     onSubmit: async (values) => {
       try {
         await axios.post(
-          `${baseUrl}Semester`,
+          "https://educredit.runasp.net/api/Semester/AssignCoursesToSemester",
           {
             semesterType: values.semesterType,
             startDate: values.startDate,
             endDate: values.endDate,
             enrollmentOpen: values.enrollmentOpen,
             enrollmentClose: values.enrollmentClose,
-            departmentId: values.departmentId,
-            courseId: values.courseId,
+            courseIds: values.courseIds,
           },
           {
             headers: {
@@ -76,23 +89,23 @@ export default function AddSemester() {
           }
         );
         alert("Semester added successfully!");
+        navigate("/SuperAdminRole/ManageSemesters");
         formik.resetForm();
       } catch (error) {
         console.error("Error submitting semester:", error);
-        alert("Failed to add semester");
+        const errorMessage = error.response?.data?.message || error.message;
+        alert(errorMessage);
       }
     },
   });
 
-  // Filter courses based on the selected department
   const filteredCourses =
     departments.find((dept) => dept.id === formik.values.departmentId)
       ?.courses || [];
 
-  // Reset courseId when department changes
   useEffect(() => {
     if (formik.values.departmentId) {
-      formik.setFieldValue("courseId", "");
+      formik.setFieldValue("courseIds", []);
     }
   }, [formik.values.departmentId]);
 
@@ -108,16 +121,18 @@ export default function AddSemester() {
         <select
           id="semesterType"
           name="semesterType"
-          onChange={formik.handleChange}
+          onChange={(e) =>
+            formik.setFieldValue("semesterType", Number(e.target.value))
+          }
           value={formik.values.semesterType}
           className={Inputs.options}
         >
           <option value="" disabled>
             Select Semester Type
           </option>
-          <option value="first-term">First Term</option>
-          <option value="second-term">Second Term</option>
-          <option value="summer-course">Summer Course</option>
+          <option value="1">First Term</option>
+          <option value="2">Second Term</option>
+          <option value="3">Summer Course</option>
         </select>
         {formik.touched.semesterType && formik.errors.semesterType && (
           <div className="text-red-500 text-sm">
@@ -159,13 +174,13 @@ export default function AddSemester() {
 
       <div className={Inputs.inputRow}>
         <div className={Inputs.inputContainer}>
-          <label htmlFor="enrollmentOpen">Enrollment Open</label>
+          <label>Enrollment Open</label>
           <input
-            type="date"
-            id="enrollmentOpen"
+            type="datetime-local"
             name="enrollmentOpen"
             onChange={formik.handleChange}
             value={formik.values.enrollmentOpen}
+            className="w-full"
           />
           {formik.touched.enrollmentOpen && formik.errors.enrollmentOpen && (
             <div className="text-red-500 text-sm">
@@ -173,14 +188,15 @@ export default function AddSemester() {
             </div>
           )}
         </div>
+
         <div className={Inputs.inputContainer}>
-          <label htmlFor="enrollmentClose">Enrollment Close</label>
+          <label>Enrollment Close</label>
           <input
-            type="date"
-            id="enrollmentClose"
+            type="datetime-local"
             name="enrollmentClose"
             onChange={formik.handleChange}
             value={formik.values.enrollmentClose}
+            className="w-full"
           />
           {formik.touched.enrollmentClose && formik.errors.enrollmentClose && (
             <div className="text-red-500 text-sm">
@@ -204,7 +220,7 @@ export default function AddSemester() {
           </option>
           {departments.map((dept) => (
             <option key={dept.id} value={dept.id}>
-              {dept.departmentName} {/* Adjust based on API response */}
+              {dept.departmentName}
             </option>
           ))}
         </select>
@@ -215,29 +231,40 @@ export default function AddSemester() {
         )}
       </div>
 
-      <div className={Inputs.inputContainer}>
-        <label htmlFor="courseId">Course</label>
-        <select
-          id="courseId"
-          name="courseId"
-          onChange={formik.handleChange}
-          value={formik.values.courseId}
-          className={Inputs.options}
-          disabled={!formik.values.departmentId} // Disable until department is selected
+      <FormControl
+        fullWidth
+        error={formik.touched.courseIds && Boolean(formik.errors.courseIds)}
+        disabled={!formik.values.departmentId}
+      >
+        <InputLabel id="courseIds-label">Courses</InputLabel>
+        <Select
+          labelId="courseIds-label"
+          id="courseIds"
+          name="courseIds"
+          multiple
+          value={formik.values.courseIds || []}
+          onChange={(e) => formik.setFieldValue("courseIds", e.target.value)}
+          input={<OutlinedInput label="Courses" />}
+          renderValue={(selected) =>
+            filteredCourses
+              .filter((course) => selected.includes(course.id))
+              .map((course) => course.name)
+              .join(", ")
+          }
         >
-          <option value="" disabled>
-            Select Course
-          </option>
           {filteredCourses.map((course) => (
-            <option key={course.id} value={course.id}>
-              {course.name}
-            </option>
+            <MenuItem key={course.id} value={course.id}>
+              <Checkbox
+                checked={formik.values.courseIds?.includes(course.id)}
+              />
+              <ListItemText primary={course.name} />
+            </MenuItem>
           ))}
-        </select>
-        {formik.touched.courseId && formik.errors.courseId && (
-          <div className="text-red-500 text-sm">{formik.errors.courseId}</div>
+        </Select>
+        {formik.touched.courseIds && formik.errors.courseIds && (
+          <FormHelperText>{formik.errors.courseIds}</FormHelperText>
         )}
-      </div>
+      </FormControl>
 
       <div className={ButtonDesign.button}>
         <button type="submit">Submit</button>

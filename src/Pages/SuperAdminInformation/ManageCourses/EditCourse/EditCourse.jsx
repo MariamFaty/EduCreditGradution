@@ -14,6 +14,7 @@ export default function EditCourse() {
   const [departments, setDepartments] = useState([]);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [defaultPreviousCourseId, setDefaultPreviousCourseId] = useState(null); // لحفظ الـ id بتاع Lurean
 
   let { accessToken } = useContext(authContext);
   const navigate = useNavigate();
@@ -35,10 +36,10 @@ export default function EditCourse() {
       console.log("Course data:", response.data.result);
       setCourse(response.data.result);
       formik.setValues({
-        name: response.data.result.name,
-        creditHours: response.data.result.creditHours,
-        duration: response.data.result.duration,
-        minimumDegree: response.data.result.minimumDegree,
+        name: response.data.result.name || "",
+        creditHours: response.data.result.creditHours || "",
+        duration: response.data.result.duration || "",
+        minimumDegree: response.data.result.minimumDegree || "",
         departmentId: response.data.result.department?.id || "",
         previousCourseId: response.data.result.previousCourseId || "",
       });
@@ -60,6 +61,20 @@ export default function EditCourse() {
       );
       console.log("Departments data:", response.data.result);
       setDepartments(response.data.result || []);
+
+      // ابحث عن الكورس اللي اسمه "lurean" (بتجاهل الحروف الكبيرة والصغيرة)
+      let lureanCourseId = null;
+      for (const dept of response.data.result) {
+        const lureanCourse = dept.courses.find(
+          (course) => course.name.toLowerCase() === "lurean"
+        );
+        if (lureanCourse) {
+          lureanCourseId = lureanCourse.id;
+          break;
+        }
+      }
+      setDefaultPreviousCourseId(lureanCourseId);
+      console.log("Lurean Course ID:", lureanCourseId);
     } catch (error) {
       setError("Failed to fetch departments and courses.");
     }
@@ -91,8 +106,8 @@ export default function EditCourse() {
           `Minimum Degree must be less than ${creditHours * 100}`
         )
       ),
-    departmentId: Yup.string().required("Department is required"),
-    previousCourseId: Yup.string(),
+    departmentId: Yup.string().nullable(),
+    previousCourseId: Yup.string().nullable(),
   });
 
   const formik = useFormik({
@@ -101,23 +116,30 @@ export default function EditCourse() {
       creditHours: "",
       duration: "",
       minimumDegree: "",
-      departmentNameId: "", // التعديل هنا
+      departmentId: "",
       previousCourseId: "",
     },
     validationSchema,
     onSubmit: async (values) => {
       setIsLoading(true);
       try {
+        const payload = {
+          name: values.name,
+          creditHours: values.creditHours,
+          duration: values.duration,
+          minimumDegree: values.minimumDegree,
+          departmentId: values.departmentId || course.id,
+          previousCourseId:
+            values.previousCourseId ||
+            course.previousCourseId ||
+            defaultPreviousCourseId ||
+            null, // استخدام الـ id بتاع Lurean لو ما فيش قيمة
+        };
+
+        console.log("Payload:", payload);
         const response = await axios.put(
           `${baseUrl}Course/${courseId}`,
-          {
-            name: values.name,
-            creditHours: values.creditHours,
-            duration: values.duration,
-            minimumDegree: values.minimumDegree,
-            departmentId: values.departmentId, // التعديل هنا
-            previousCourseId: values.previousCourseId || null,
-          },
+          payload,
           {
             headers: {
               Accept: "text/plain",
@@ -126,13 +148,17 @@ export default function EditCourse() {
           }
         );
         console.log("Updated successfully:", response.data);
+        alert("Course Updated successfully");
         navigate("/SuperAdminRole/ManageCourses");
       } catch (error) {
         console.error(
           "Error updating course:",
           error.response?.data || error.message
         );
-        setError("Failed to update course");
+        const errorMessage =
+          error.response?.data?.message || // لو فيه حقل message
+          "An unexpected error occurred"; // رسالة افتراضية
+        setError(errorMessage);
       } finally {
         setIsLoading(false);
       }
@@ -159,8 +185,8 @@ export default function EditCourse() {
             id="name"
             name="name"
             onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
             value={formik.values.name}
-            required
           />
           {formik.errors.name && formik.touched.name && (
             <p className="text-red-500 text-sm">{formik.errors.name}</p>
@@ -175,8 +201,8 @@ export default function EditCourse() {
             id="creditHours"
             name="creditHours"
             onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
             value={formik.values.creditHours}
-            required
           />
           {formik.errors.creditHours && formik.touched.creditHours && (
             <p className="text-red-500 text-sm">{formik.errors.creditHours}</p>
@@ -191,8 +217,8 @@ export default function EditCourse() {
             id="duration"
             name="duration"
             onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
             value={formik.values.duration}
-            required
           />
           {formik.errors.duration && formik.touched.duration && (
             <p className="text-red-500 text-sm">{formik.errors.duration}</p>
@@ -207,8 +233,8 @@ export default function EditCourse() {
             id="minimumDegree"
             name="minimumDegree"
             onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
             value={formik.values.minimumDegree}
-            required
           />
           {formik.errors.minimumDegree && formik.touched.minimumDegree && (
             <p className="text-red-500 text-sm">
@@ -221,20 +247,22 @@ export default function EditCourse() {
         <div className={Inputs.inputContainer}>
           <label htmlFor="departmentId">Department Name</label>
           <select
-            id="departmentNameId"
-            name="departmentNameId"
+            id="departmentId"
+            name="departmentId"
             onChange={formik.handleChange}
-            value={formik.values.departmentNameId} // التعديل هنا
-            required
+            onBlur={formik.handleBlur}
+            value={formik.values.departmentId || course.department?.id || ""}
           >
-            <option value="" disabled>
-              Select Department Name
+            <option value={course.department?.id || ""}>
+              {course.departmentName || "Select Department"}
             </option>
-            {departments.map((dept) => (
-              <option key={dept.id} value={dept.id}>
-                {dept.departmentName}
-              </option>
-            ))}
+            {departments
+              .filter((dept) => dept.id !== course.department?.id)
+              .map((dept) => (
+                <option key={dept.id} value={dept.id}>
+                  {dept.departmentName}
+                </option>
+              ))}
           </select>
           {formik.errors.departmentId && formik.touched.departmentId && (
             <p className="text-red-500 text-sm">{formik.errors.departmentId}</p>
@@ -248,15 +276,31 @@ export default function EditCourse() {
             id="previousCourseId"
             name="previousCourseId"
             onChange={formik.handleChange}
-            value={formik.values.previousCourseId || ""}
+            onBlur={formik.handleBlur}
+            value={
+              formik.values.previousCourseId ||
+              course.previousCourseId ||
+              defaultPreviousCourseId ||
+              ""
+            }
             disabled={!formik.values.departmentId}
           >
-            <option value="">None</option>
-            {filteredCourses.map((course) => (
-              <option key={course.id} value={course.id}>
-                {course.previousCourseName}
-              </option>
-            ))}
+            <option
+              value={course.previousCourseId || defaultPreviousCourseId || ""}
+            >
+              {course.previousCourseName || "None"}
+            </option>
+            {filteredCourses
+              .filter(
+                (courseItem) =>
+                  courseItem.id !==
+                  (course.previousCourseId || defaultPreviousCourseId)
+              )
+              .map((courseItem) => (
+                <option key={courseItem.id} value={courseItem.id}>
+                  {courseItem.name}
+                </option>
+              ))}
           </select>
           {formik.errors.previousCourseId &&
             formik.touched.previousCourseId && (

@@ -15,7 +15,7 @@ export default function AddCourse() {
   const [courses, setCourses] = useState([]);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  let { accessToken } = useContext(authContext);
+  const { accessToken } = useContext(authContext);
   const navigate = useNavigate();
 
   async function fetchDepartments() {
@@ -29,7 +29,6 @@ export default function AddCourse() {
           },
         }
       );
-
       setDepartments(response.data.result);
       const allCourses = response.data.result.flatMap((dept) => dept.courses);
       setCourses(allCourses);
@@ -44,10 +43,7 @@ export default function AddCourse() {
 
   const validationSchema = Yup.object().shape({
     name: Yup.string()
-      .matches(
-        /^[A-Za-z\s]{3,50}$/,
-        "Name must be 3-50 characters and contain only letters and spaces."
-      )
+      .matches(/^[A-Za-z\s]+$/, "Name must contain only letters and spaces")
       .required("Name is required"),
     creditHours: Yup.number()
       .typeError("Credit Hours must be a number")
@@ -59,8 +55,13 @@ export default function AddCourse() {
           value === undefined || /^\d+(\.\d{1,2})?$/.test(value.toString())
       )
       .required("Credit Hours is required"),
+    duration: Yup.number()
+      .typeError("Duration must be a number")
+      .positive("Duration must be a positive number")
+      .required("Duration is required"),
     minimumDegree: Yup.number()
       .typeError("Minimum Degree must be a number")
+      .positive("Minimum Degree must be positive")
       .required("Minimum Degree is required")
       .when("creditHours", (creditHours, schema) =>
         schema.max(
@@ -68,8 +69,8 @@ export default function AddCourse() {
           `Minimum Degree must be less than ${creditHours * 100}`
         )
       ),
-    previousCourseId: Yup.string().required("Previous Course is required"),
     departmentId: Yup.string().required("Department is required"),
+    previousCourseId: Yup.string(), // optional
   });
 
   const formik = useFormik({
@@ -85,8 +86,15 @@ export default function AddCourse() {
     onSubmit: async (values, { resetForm }) => {
       setIsLoading(true);
       setError("");
+
+      // حذف previousCourseId لو مفيش قيمة
+      const payload = {
+        ...values,
+        previousCourseId: values.previousCourseId || null,
+      };
+
       try {
-        const response = await axios.post(`${baseUrl}Course`, values, {
+        const response = await axios.post(`${baseUrl}Course`, payload, {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${accessToken}`,
@@ -101,14 +109,16 @@ export default function AddCourse() {
           throw new Error("Failed to add course");
         }
       } catch (error) {
-        setError("Error adding course. Please try again.");
+        setError(
+          error.response?.data?.message ||
+            "Error adding course. Please try again."
+        );
       } finally {
         setIsLoading(false);
       }
     },
   });
 
-  // Filter courses based on the selected department
   const filteredCourses =
     departments.find((dept) => dept.id === formik.values.departmentId)
       ?.courses || [];
@@ -121,7 +131,6 @@ export default function AddCourse() {
         </div>
         <div className={AddText.line}></div>
 
-        {/* Course Name */}
         <div className={Inputs.inputContainer}>
           <label htmlFor="name">Course Name</label>
           <input
@@ -129,6 +138,7 @@ export default function AddCourse() {
             id="name"
             name="name"
             onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
             value={formik.values.name}
             required
           />
@@ -137,7 +147,6 @@ export default function AddCourse() {
           )}
         </div>
 
-        {/* Credit Hours */}
         <div className={Inputs.inputContainer}>
           <label htmlFor="creditHours">Credit Hours</label>
           <input
@@ -145,6 +154,7 @@ export default function AddCourse() {
             id="creditHours"
             name="creditHours"
             onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
             value={formik.values.creditHours}
             required
           />
@@ -153,7 +163,6 @@ export default function AddCourse() {
           )}
         </div>
 
-        {/* Duration */}
         <div className={Inputs.inputContainer}>
           <label htmlFor="duration">Duration</label>
           <input
@@ -161,6 +170,7 @@ export default function AddCourse() {
             id="duration"
             name="duration"
             onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
             value={formik.values.duration}
             required
           />
@@ -169,7 +179,6 @@ export default function AddCourse() {
           )}
         </div>
 
-        {/* Minimum Degree */}
         <div className={Inputs.inputContainer}>
           <label htmlFor="minimumDegree">Minimum Degree</label>
           <input
@@ -177,6 +186,7 @@ export default function AddCourse() {
             id="minimumDegree"
             name="minimumDegree"
             onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
             value={formik.values.minimumDegree}
             required
           />
@@ -187,13 +197,13 @@ export default function AddCourse() {
           )}
         </div>
 
-        {/* Department Selection */}
         <div className={Inputs.inputContainer}>
           <label htmlFor="departmentId">Department Name</label>
           <select
             id="departmentId"
             name="departmentId"
             onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
             value={formik.values.departmentId}
             required
           >
@@ -211,42 +221,31 @@ export default function AddCourse() {
           )}
         </div>
 
-        {/* Previous Course Selection */}
         <div className={Inputs.inputContainer}>
           <label htmlFor="previousCourseId">Previous Course Name</label>
           <select
             id="previousCourseId"
             name="previousCourseId"
             onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
             value={formik.values.previousCourseId || ""}
-            required
-            disabled={!formik.values.departmentId} // Disable if no department is selected
+            disabled={!formik.values.departmentId}
           >
-            <option value="" disabled>
-              Select Previous Course Name
-            </option>
+            <option value="">Select Previous Course Name (optional)</option>
             {filteredCourses.map((course) => (
               <option key={course.id} value={course.id}>
                 {course.name}
               </option>
             ))}
           </select>
-          {formik.errors.previousCourseId &&
-            formik.touched.previousCourseId && (
-              <p className="text-red-500 text-sm">
-                {formik.errors.previousCourseId}
-              </p>
-            )}
         </div>
 
-        {/* Submit Button */}
         <div className={ButtonDesign.button}>
           <button type="submit" disabled={isLoading}>
             {isLoading ? <i className="fas fa-spin fa-spinner"></i> : "Submit"}
           </button>
         </div>
 
-        {/* Error Message */}
         {error && <p className="text-red-500 text-sm">{error}</p>}
       </div>
     </form>

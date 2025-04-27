@@ -154,7 +154,7 @@ export default function SuperAdminRole() {
                   <td className={Table.actionButtons}>
                     <button className={Table.infoButton}>
                       <Link
-                        to={`/SuperAdminRole/ManageCourses/InfoCourse/${dept.id}`}
+                        to={`/SuperAdminRole/InfoEachDepartment/${dept.id}/${dept.name}`}
                         className="fa-solid fa-circle-info"
                       ></Link>
                     </button>

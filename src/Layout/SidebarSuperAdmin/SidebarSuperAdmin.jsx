@@ -1,24 +1,55 @@
-import React, { useState } from "react";
-import { Outlet, NavLink } from "react-router-dom";
+import React, { useContext, useState } from "react";
+import { Outlet, useNavigate, NavLink } from "react-router-dom";
 import SidebarSuperAdminStyle from "./SidebarSuperAdmin.module.css";
 import { sideLogo } from "./../../assets/Icons/SideLogo";
+import axios from "axios";
+import { baseUrl } from "../../Env/Env";
+import { authContext } from "../../Context/AuthContextProvider";
 
 export default function SidebarSuperAdmin() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const navigate = useNavigate();
+  const { accessToken, setAccessToken, refreshToken, setRefreshToken } =
+    useContext(authContext); // جيبي الدوال من authContext
 
   // Toggle Sidebar
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
-  // Close Sidebar when an item is clicked (on small screens)
-  const handleNavClick = () => {
-    if (window.innerWidth > 1440) {
-      setIsSidebarOpen(false);
+  // Logout handler
+  const handleLogout = async () => {
+    // التأكد من إن الـ accessToken موجود
+    if (accessToken) {
+      try {
+        await axios.get(`${baseUrl}Account/logout`, {
+          headers: {
+            Authorization: `Bearer ${accessToken}`, // استخدام الـ accessToken من authContext
+          },
+        });
+        console.log("Logout successful");
+      } catch (error) {
+        console.warn("Logout failed, token may already be invalid:", error);
+      }
     } else {
-      setIsSidebarOpen(true);
+      console.warn(
+        "No access token found in authContext, proceeding with frontend logout."
+      );
     }
+
+    // مسح الـ accessToken و refreshToken من الـ Context
+    setAccessToken(null);
+    setRefreshToken(null);
+
+    // مسح الـ accessToken و refreshToken و role من localStorage
+    localStorage.removeItem("accesstoken");
+    localStorage.removeItem("refreshtoken");
+    localStorage.removeItem("role");
+
+    // التوجيه لصفحة الـ Login
+    navigate("/Login");
   };
+
   return (
     <>
       {/* Hamburger Button */}
@@ -43,6 +74,7 @@ export default function SidebarSuperAdmin() {
           />
         </svg>
       </button>
+
       <div className={SidebarSuperAdminStyle.container}>
         {/* Sidebar */}
         <div
@@ -58,7 +90,7 @@ export default function SidebarSuperAdmin() {
           <ul className={SidebarSuperAdminStyle.menu}>
             <li>
               <NavLink to="/SuperAdminRole">
-                <i class="fa-solid fa-chart-pie"></i> <p>Dashboard</p>
+                <i className="fa-solid fa-chart-pie"></i> <p>Dashboard</p>
               </NavLink>
             </li>
             <li>
@@ -138,6 +170,7 @@ export default function SidebarSuperAdmin() {
               </NavLink>
             </li>
           </ul>
+
           <h3 className={SidebarSuperAdminStyle.SecondTitle}>OTHER</h3>
           <ul className={SidebarSuperAdminStyle.menu}>
             <li>
@@ -152,14 +185,12 @@ export default function SidebarSuperAdmin() {
               </NavLink>
             </li>
             <li>
-              <NavLink
-                to="/Login"
-                className={({ isActive }) =>
-                  `${isActive ? "bg-[#E6E6E6]" : "text-gray-600"}`
-                }
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-2  hover:bg-[#E6E6E6] w-full px-3 py-2 rounded-md cursor-pointer"
               >
                 <i className="fa-solid fa-lock"></i> <p>Logout</p>
-              </NavLink>
+              </button>
             </li>
           </ul>
         </div>

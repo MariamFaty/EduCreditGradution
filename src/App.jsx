@@ -29,6 +29,28 @@ import InfoAdmin from "./Pages/SuperAdminInformation/ManageAdmins/InfoAdmin/Info
 import InfoStudent from "./Pages/SuperAdminInformation/ManageStudents/InfoStudent/InfoStudent";
 import EditCourse from "./Pages/SuperAdminInformation/ManageCourses/EditCourse/EditCourse";
 import AddSemester from "./Pages/SuperAdminInformation/ManageSemesters/AddSemester/AddSemester";
+import InfoEachDepartment from "./Pages/SuperAdminInformation/DashboardSuperAdmin/InfoEachDepartment/InfoEachDepartment";
+import InfoEachCourse from "./Pages/SuperAdminInformation/DashboardSuperAdmin/InfoEachCourse/InfoEachCourse";
+import SidebarAdmin from "./Layout/SidebarAdmin/SidebarAdmin";
+import DashboardAdmin from "./Pages/AdminInformation/DashboardAdmin/DashboardAdmin";
+import ManageStudentAdmin from "./Pages/AdminInformation/ManageStudentAdmin/ManageStudentAdmin";
+import SidebarTeacher from "./Layout/SidebarTeacher/SidebarTeacher";
+import DashboardTeacher from "./Pages/TeacherInformation/DashboardTeacher/DashboardTeacher";
+import CoursesScheduled from "./Pages/TeacherInformation/CoursesScheduled/CoursesScheduled";
+import ManageGuidance from "./Pages/TeacherInformation/ManageGuidance/ManageGuidance";
+import InfoEachDepartmentAdmin from "./Pages/AdminInformation/DashboardAdmin/InfoEachDepartmentAdmin/InfoEachDepartmentAdmin";
+import AddStudentAdmin from "./Pages/AdminInformation/ManageStudentAdmin/AddStudentAdmin/AddStudentAdmin";
+import EditStudentAdmin from "./Pages/AdminInformation/ManageStudentAdmin/EditStudentAdmin/EditStudentAdmin";
+import InfoStudentAdmin from "./Pages/AdminInformation/ManageStudentAdmin/InfoStudentAdmin/InfoStudentAdmin";
+import EditEachCourse from "./Pages/SuperAdminInformation/DashboardSuperAdmin/EditEachCourse/EditEachCourse";
+import InfoEachCourseAdmin from "./Pages/AdminInformation/DashboardAdmin/InfoEachCourseAdmin/InfoEachCourseAdmin";
+import EditSemester from "./Pages/SuperAdminInformation/ManageSemesters/EditSemester/EditSemester";
+import InfoEashSemester from "./Pages/SuperAdminInformation/ManageSemesters/InfoEashSemester/InfoEashSemester";
+import EditStudent from "./Pages/SuperAdminInformation/ManageStudents/EditStudent/EditStudent";
+import EditAdmin from "./Pages/SuperAdminInformation/ManageAdmins/EditAdmin/EditAdmin";
+import EditTeacher from "./Pages/SuperAdminInformation/ManageTeachers/EditTeacher/EditTeacher";
+import InfoEachDepartmentSemester from "./Pages/SuperAdminInformation/ManageSemesters/InfoEachDepartmentSemester/InfoEachDepartmentSemester";
+import DashboardStudent from "./Pages/StudentInformation/DashboardStudent/DashboardStudent";
 
 const router = createBrowserRouter([
   {
@@ -64,6 +86,18 @@ const router = createBrowserRouter([
         element: <AddSemester />,
       },
       {
+        path: "ManageSemesters/EditSemester/:semesterId",
+        element: <EditSemester />,
+      },
+      {
+        path: "ManageSemesters/InfoEashSemester/:semesterId",
+        element: <InfoEashSemester />,
+      },
+      {
+        path: "ManageSemesters/InfoEashSemester/InfoEachDepartmentSemester/:departmentId/:departmentName",
+        element: <InfoEachDepartmentSemester />,
+      },
+      {
         path: "ManageAdmins",
         element: <ManageAdmins />,
       },
@@ -92,12 +126,24 @@ const router = createBrowserRouter([
         element: <AddStudent />,
       },
       {
+        path: "ManageStudents/EditStudent/:studentId",
+        element: <EditStudent />,
+      },
+      {
         path: "AddTeacher",
         element: <AddTeacher />,
       },
       {
+        path: "ManageTeachers/EditTeacher/:teacherId",
+        element: <EditTeacher />,
+      },
+      {
         path: "AddAdmin",
         element: <AddAdmin />,
+      },
+      {
+        path: "ManageAdmins/EditAdmin/:adminId",
+        element: <EditAdmin />,
       },
       {
         path: "ManageDepartments/EditDepartment/:departmentId",
@@ -123,6 +169,18 @@ const router = createBrowserRouter([
         path: "ManageStudents/InfoStudent/:studentId", // إضافة المعرف :teacherId في المسار
         element: <InfoStudent />,
       },
+      {
+        path: "/SuperAdminRole/InfoEachDepartment/:departmentId/:departmentName", // إضافة المعرف :teacherId في المسار
+        element: <InfoEachDepartment />,
+      },
+      {
+        path: "/SuperAdminRole/InfoEachDepartment/InfoEachCourse/:courseId", // إضافة المعرف :teacherId في المسار
+        element: <InfoEachCourse />,
+      },
+      {
+        path: "/SuperAdminRole/InfoEachDepartment/EditEachCourse/:courseId", // إضافة المعرف :teacherId في المسار
+        element: <EditEachCourse />,
+      },
     ],
   },
   {
@@ -130,7 +188,12 @@ const router = createBrowserRouter([
     element: <SidebarStudent />,
     children: [
       {
-        path: "",
+        path: "", // المسار الفارغ يعني الصفحة الرئيسية داخل هذا القسم
+        element: <DashboardStudent />,
+      },
+      ,
+      {
+        path: "PersonalInformation",
         element: <PersonalInformation />,
       },
       {
@@ -148,6 +211,67 @@ const router = createBrowserRouter([
       {
         path: "CourseResults",
         element: <CourseResults />,
+      },
+    ],
+  },
+  {
+    path: "/AdminRole",
+    element: <SidebarAdmin />,
+    children: [
+      {
+        path: "", // المسار الفارغ يعني الصفحة الرئيسية داخل هذا القسم
+        element: <DashboardAdmin />,
+      },
+      {
+        path: "PersonalInformation",
+        element: <PersonalInformation />,
+      },
+      {
+        path: "ManageStudentAdmin",
+        element: <ManageStudentAdmin />,
+      },
+      {
+        path: "/AdminRole/InfoEachDepartmentAdmin/:departmentId/:departmentName", // إضافة المعرف :teacherId في المسار
+        element: <InfoEachDepartmentAdmin />,
+      },
+      {
+        path: "/AdminRole/InfoEachDepartmentAdmin/InfoEachCourseAdmin/:courseId", // إضافة المعرف :teacherId في المسار
+        element: <InfoEachCourseAdmin />,
+      },
+
+      {
+        path: "ManageStudentAdmin/AddStudentAdmin",
+        element: <AddStudentAdmin />,
+      },
+      {
+        path: "ManageStudentAdmin/EditStudentAdmin/:studentId",
+        element: <EditStudentAdmin />,
+      },
+      {
+        path: "ManageStudentAdmin/InfoStudentAdmin/:studentId",
+        element: <InfoStudentAdmin />,
+      },
+    ],
+  },
+  {
+    path: "/TeacherRole",
+    element: <SidebarTeacher />,
+    children: [
+      {
+        path: "", // المسار الفارغ يعني الصفحة الرئيسية داخل هذا القسم
+        element: <DashboardTeacher />,
+      },
+      {
+        path: "PersonalInformation",
+        element: <PersonalInformation />,
+      },
+      {
+        path: "CoursesScheduled",
+        element: <CoursesScheduled />,
+      },
+      {
+        path: "ManageGuidance",
+        element: <ManageGuidance />,
       },
     ],
   },

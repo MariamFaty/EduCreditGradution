@@ -22,31 +22,36 @@ export default function SidebarStudent() {
           <h3 className={SidebarStudentStyle.menuTitle}>MAIN MENU</h3>
           <ul className={SidebarStudentStyle.menu}>
             <li>
-              <NavLink to="/PersonalInformation" end>
-                <i className="fa-solid fa-circle-plus"></i>{" "}
+              <NavLink to="/StudentRole">
+                <i className="fa-solid fa-chart-pie"></i> <p>Dashboard</p>
+              </NavLink>
+            </li>
+            <li>
+              <NavLink to="/StudentRole/PersonalInformation" end>
+                <i className="fa-solid fa-circle-info"></i>
                 <p>Personal Information</p>
               </NavLink>
             </li>
             <li>
-              <NavLink to="/PersonalInformation/EnrollOfCourses">
+              <NavLink to="/StudentRole/EnrollOfCourses">
                 <i className="fa-solid fa-circle-info"></i>
                 <p>Enroll Of Courses</p>
               </NavLink>
             </li>
             <li>
-              <NavLink to="/PersonalInformation/StudySchedule">
+              <NavLink to="/StudentRole/StudySchedule">
                 <i className="fa-solid fa-database"></i>
                 <p>Study Schedule</p>
               </NavLink>
             </li>
             <li>
-              <NavLink to="/PersonalInformation/ExamSchedule">
+              <NavLink to="/StudentRole/ExamSchedule">
                 <i className="fa-solid fa-database"></i>
                 <p>Exam Schedule</p>
               </NavLink>
             </li>
             <li>
-              <NavLink to="/PersonalInformation/CourseResults">
+              <NavLink to="/StudentRole/CourseResults">
                 <i className="fa-solid fa-database"></i>
                 <p>Course Results</p>
               </NavLink>
@@ -78,7 +83,7 @@ export default function SidebarStudent() {
         <div
           className={`${
             SidebarStudentStyle.content
-          } p-6 bg-white transition-all duration-300 flex-1 ${
+          }  bg-white transition-all duration-300 flex-1 ${
             isSidebarOpen ? "hidden lg:block" : "w-full"
           }`}
         >
