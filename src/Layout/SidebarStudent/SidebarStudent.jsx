@@ -60,12 +60,6 @@ export default function SidebarStudent() {
           <h3 className={SidebarStudentStyle.SecondTitle}>OTHER</h3>
           <ul className={SidebarStudentStyle.menu}>
             <li>
-              <NavLink to="/help-center">
-                <i className="fa-solid fa-circle-question"></i>
-                <p>Help Center</p>
-              </NavLink>
-            </li>
-            <li>
               <NavLink to="/reset-password">
                 <i className="fa-solid fa-right-from-bracket"></i>{" "}
                 <p>Reset Password</p>

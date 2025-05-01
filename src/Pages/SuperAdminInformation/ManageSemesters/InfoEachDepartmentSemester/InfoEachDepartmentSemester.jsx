@@ -3,7 +3,6 @@ import { useParams, Link } from "react-router-dom";
 import axios from "axios";
 import Search from "../../../../Shared/Css/SearchInput.module.css";
 import styles from "./InfoEachDepartmentSemester.module.css";
-import Information from "../../../../../src/Shared/Css/InfoAndInformation.module.css";
 import Table from "../../../../Shared/Css/TableDesign.module.css";
 import Pagination from "../../../../Shared/Css/Pagination.module.css";
 import { authContext } from "../../../../Context/AuthContextProvider";
@@ -12,35 +11,56 @@ import { baseUrl } from "../../../../Env/Env";
 export default function InfoEachDepartmentInSemester() {
   const { accessToken } = useContext(authContext);
   const { departmentId, departmentName } = useParams();
-  const [semesterId, setSemesterId] = useState("");
+  const [semesters, setSemesters] = useState([]); // Store all semesters
+  const [semesterId, setSemesterId] = useState(""); // Selected semester ID
+  const [semesterName, setSemesterName] = useState(""); // Selected semester name
   const [allCourses, setAllCourses] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [error, setError] = useState(null);
   const pageSize = 5;
 
-  // Fetch the current semester
-  const fetchCurrentSemester = async () => {
+  // Fetch all semesters
+  const fetchSemesters = async () => {
     try {
-      const response = await axios.get(`${baseUrl}Semester/CurrentSemester`, {
+      const response = await axios.get(`${baseUrl}Semester`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
       });
-      setSemesterId(response.data.result.id);
+
+      const semestersData = response.data.result.data;
+      if (!semestersData || semestersData.length === 0) {
+        throw new Error("No semesters found.");
+      }
+
+      console.log("All Semesters:", semestersData);
+      setSemesters(semestersData);
+
+      // Optionally, set the first semester as the default selection
+      if (semestersData.length > 0) {
+        setSemesterId(semestersData[0].id);
+        setSemesterName(semestersData[0].name);
+      }
+
       setError(null);
     } catch (error) {
-      console.error("Error fetching semester:", error.message);
+      console.error("Error fetching semesters:", error.message);
       const errorMessage = error.response?.data?.message || error.message;
       setError(errorMessage);
     }
   };
 
-  // Fetch courses for the department and semester
+  // Fetch courses for the department and selected semester
   const fetchCourses = async () => {
     if (!semesterId) return;
     try {
-      console.log("semesterId used:", semesterId);
+      console.log(
+        "Fetching courses with semesterId:",
+        semesterId,
+        "and departmentId:",
+        departmentId
+      );
       const response = await axios.get(`${baseUrl}Course`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -50,6 +70,7 @@ export default function InfoEachDepartmentInSemester() {
           semesterId: semesterId,
         },
       });
+      console.log("Courses Response:", response.data);
       setAllCourses(response.data.data);
       setError(null);
     } catch (error) {
@@ -58,10 +79,21 @@ export default function InfoEachDepartmentInSemester() {
     }
   };
 
-  // First useEffect: Fetch semesterId
+  // Handle semester selection
+  const handleSemesterChange = (e) => {
+    const selectedId = e.target.value;
+    const selectedSemester = semesters.find(
+      (semester) => semester.id === selectedId
+    );
+    setSemesterId(selectedId);
+    setSemesterName(selectedSemester ? selectedSemester.name : "");
+    setCurrentPage(1);
+  };
+
+  // First useEffect: Fetch semesters
   useEffect(() => {
     if (departmentId) {
-      fetchCurrentSemester();
+      fetchSemesters();
     } else {
       setError("Department ID is missing.");
     }
@@ -77,6 +109,7 @@ export default function InfoEachDepartmentInSemester() {
   // Handle search input
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
+    setCurrentPage(1); // Reset pagination to page 1 when search term changes
   };
 
   // Filter courses based on search term
@@ -90,10 +123,6 @@ export default function InfoEachDepartmentInSemester() {
     if (page >= 1 && page <= totalPages) {
       setCurrentPage(page);
     }
-  };
-
-  const openDeleteModal = (course) => {
-    alert(`Delete course ${course.name}`);
   };
 
   return (
@@ -114,15 +143,45 @@ export default function InfoEachDepartmentInSemester() {
         {/* Department Name */}
         <p className={styles.title}>{departmentName || "Department"}</p>
 
+        {/* Semester Selection Dropdown */}
+        <div style={{ marginBottom: "20px" }}>
+          <label htmlFor="semesterSelect" style={{ marginRight: "10px" }}>
+            Select Semester:
+          </label>
+          <select
+            id="semesterSelect"
+            value={semesterId}
+            onChange={handleSemesterChange}
+            style={{
+              padding: "5px",
+              fontSize: "16px",
+              borderRadius: "5px",
+              border: "1px solid #ccc",
+            }}
+          >
+            {semesters.length === 0 ? (
+              <option value="">No semesters available</option>
+            ) : (
+              semesters.map((semester) => (
+                <option key={semester.id} value={semester.id}>
+                  {semester.name}
+                </option>
+              ))
+            )}
+          </select>
+        </div>
+
+        {/* Display Selected Semester */}
+        <p className={styles.coursetitle}>
+          Available Courses in {semesterName || "Selected Semester"}
+        </p>
+
         {/* Error Message */}
         {error && (
           <div className="error" style={{ color: "red", marginBottom: "10px" }}>
             Error: {error}
           </div>
         )}
-
-        {/* Available Courses Section */}
-        <p className={styles.coursetitle}>Available Courses in this Semester</p>
 
         {/* Courses Table */}
         <table className={Table.table}>
@@ -144,21 +203,9 @@ export default function InfoEachDepartmentInSemester() {
                     <td>
                       <button className={Table.infoButton}>
                         <Link
-                          to={`/SuperAdminRole/InfoEachDepartment/InfoEachCourse/${course.id}`}
+                          to={`/SuperAdminRole/ManageSemesters/InfoEashSemester/InfoEachDepartmentSemester/InfoEachCourseInSemester/${course.id}/${semesterId}`}
                           className="fa-solid fa-circle-info"
                         ></Link>
-                      </button>
-                      <button className={Table.editButton}>
-                        <Link
-                          className="fas fa-edit"
-                          to={`/SuperAdminRole/InfoEachDepartment/EditEachCourse/${course.id}`}
-                        ></Link>
-                      </button>
-                      <button
-                        className={Table.deleteButton}
-                        onClick={() => openDeleteModal(course)}
-                      >
-                        <i className="fas fa-trash"></i>
                       </button>
                     </td>
                   </tr>

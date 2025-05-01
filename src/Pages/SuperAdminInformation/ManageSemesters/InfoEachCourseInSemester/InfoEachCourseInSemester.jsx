@@ -1,11 +1,15 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import styles from "../../ManageStudents/InfoStudent/InfoStudent.module.css";
 import axios from "axios";
-import styles from "../../../SuperAdminInformation/ManageStudents/InfoStudent/InfoStudent.module.css";
 import { baseUrl } from "../../../../Env/Env";
+import { authContext } from "../../../../Context/AuthContextProvider";
 
-export default function InfoEachCourseAdmin() {
+export default function InfoEachCourseInSemester() {
+  const { accessToken } = useContext(authContext);
   const { courseId } = useParams();
+  const { semesterId } = useParams();
+  const [error, setError] = useState(null);
   const [courseData, setCourseData] = useState({
     courseName: "",
     teachersName: [],
@@ -16,35 +20,14 @@ export default function InfoEachCourseAdmin() {
     examStart: "",
     examEnd: "",
     examLocation: "",
+    minimumDegree: 0,
+    creditHours: 0,
+    previousCourse: "",
   });
-  const [semesterId, setSemesterId] = useState(null); // State for semesterId
-  const [error, setError] = useState(null);
-
-  // Fetch the current semester ID
-  const fetchCurrentSemester = async () => {
-    try {
-      const token = localStorage.getItem("accesstoken");
-      if (!token) {
-        throw new Error("No token found. Please log in again.");
-      }
-
-      const response = await axios.get(`${baseUrl}Semester/CurrentSemester`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      console.log("Semester ID:", response.data.result.id);
-      setSemesterId(response.data.result.id);
-    } catch (error) {
-      console.error("Error fetching semester:", error.message);
-      const errorMessage = error.response?.data?.message || error.message;
-      setError(errorMessage);
-    }
-  };
 
   // Fetch course data using courseId and semesterId
   const fetchCourseData = async () => {
-    if (!semesterId) return; // Wait until semesterId is available
+    if (!semesterId) return;
 
     try {
       const token = localStorage.getItem("accesstoken");
@@ -75,6 +58,9 @@ export default function InfoEachCourseAdmin() {
         examStart: response.data.result.examStart || "Not Available",
         examEnd: response.data.result.examEnd || "Not Available",
         examLocation: response.data.result.examLocation || "Not Available",
+        minimumDegree: response.data.result.minimumDegree ?? "Not Available",
+        creditHours: response.data.result.creditHours ?? "Not Available",
+        previousCourse: response.data.result.previousCourse || "Not Available",
       });
     } catch (error) {
       if (error.response) {
@@ -91,11 +77,6 @@ export default function InfoEachCourseAdmin() {
       console.error("Error fetching course data:", error);
     }
   };
-
-  // Fetch semester first, then course data
-  useEffect(() => {
-    fetchCurrentSemester();
-  }, []);
 
   // Fetch course data when semesterId or courseId changes
   useEffect(() => {
@@ -150,6 +131,23 @@ export default function InfoEachCourseAdmin() {
       <div className={styles.row}>
         <span className={styles.Lable}>Exam Location</span>
         <span className={styles.data}>{courseData.examLocation || "N/A"}</span>
+      </div>
+
+      <div className={styles.row}>
+        <span className={styles.Lable}>Credit Hours</span>
+        <span className={styles.data}>{courseData.creditHours || "N/A"}</span>
+      </div>
+
+      <div className={styles.row}>
+        <span className={styles.Lable}>Minimum Degree</span>
+        <span className={styles.data}>{courseData.minimumDegree || "N/A"}</span>
+      </div>
+
+      <div className={styles.row}>
+        <span className={styles.Lable}>Previous Course</span>
+        <span className={styles.data}>
+          {courseData.previousCourse || "N/A"}
+        </span>
       </div>
     </div>
   );

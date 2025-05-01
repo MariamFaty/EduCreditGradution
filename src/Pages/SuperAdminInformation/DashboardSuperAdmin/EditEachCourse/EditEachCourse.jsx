@@ -40,7 +40,7 @@ export default function EditEachCourse() {
 
   const formik = useFormik({
     initialValues: {
-      teacherIds: [], // note: changed from teacherId to teacherIds (array)
+      teacherIds: [],
       day: "",
       lectureStart: "00:00",
       lectureEnd: "00:00",
@@ -52,48 +52,47 @@ export default function EditEachCourse() {
     },
     onSubmit: async (values) => {
       const payload = {
-        updateScheduleDto: {
-          // Added the required field
-          teacherIds:
-            values.teacherIds.length > 0
-              ? values.teacherIds
-              : [originalData.teacherId],
-          day: values.day || originalData.day,
-          lectureStart:
-            values.lectureStart ||
-            (originalData.lectureStart
-              ? originalData.lectureStart.slice(0, 5)
-              : "00:00"),
-          lectureEnd:
-            values.lectureEnd ||
-            (originalData.lectureEnd
-              ? originalData.lectureEnd.slice(0, 5)
-              : "00:00"),
-          lectureLocation:
-            values.lectureLocation || originalData.lectureLocation,
-          examDate: values.examDate || originalData.examDate,
-          examLocation: values.examLocation || originalData.examLocation,
-          examStart:
-            values.examStart ||
-            (originalData.examStart
-              ? originalData.examStart.slice(0, 5)
-              : "00:00"),
-          examEnd:
-            values.examEnd ||
-            (originalData.examEnd ? originalData.examEnd.slice(0, 5) : "00:00"),
-        },
+        teacherIds:
+          values.teacherIds.length > 0
+            ? values.teacherIds
+            : [originalData.teacherId],
+        day: values.day !== "" ? values.day : originalData.day,
+        lectureStart:
+          values.lectureStart !== ""
+            ? `${values.lectureStart}:00`
+            : (originalData.lectureStart?.slice(0, 5) || "00:00") + ":00",
+        lectureEnd:
+          values.lectureEnd !== ""
+            ? `${values.lectureEnd}:00`
+            : (originalData.lectureEnd?.slice(0, 5) || "00:00") + ":00",
+        lectureLocation:
+          values.lectureLocation !== ""
+            ? values.lectureLocation
+            : originalData.lectureLocation,
+        examDate:
+          values.examDate !== "" ? values.examDate : originalData.examDate,
+        examLocation:
+          values.examLocation !== ""
+            ? values.examLocation
+            : originalData.examLocation,
+        examStart:
+          values.examStart !== ""
+            ? `${values.examStart}:00`
+            : (originalData.examStart?.slice(0, 5) || "00:00") + ":00",
+        examEnd:
+          values.examEnd !== ""
+            ? `${values.examEnd}:00`
+            : (originalData.examEnd?.slice(0, 5) || "00:00") + ":00",
       };
 
       try {
-        // إرسال التعديل
-        await axios.put(`${baseUrl}Schedule/${scheduleId}`, payload, {
+        await axios.put(`${baseUrl}Schedule/${courseId}`, payload, {
           headers: {
             Accept: "text/plain",
             Authorization: `Bearer ${accessToken}`,
           },
         });
 
-        // بعد التعديل بنجاح، نقوم بتحديث القيم في الفورم (formik) لعرض البيانات المحدثة
         const updatedCourseResponse = await axios.get(
           `${baseUrl}Schedule/${courseId}`,
           {
@@ -103,9 +102,9 @@ export default function EditEachCourse() {
             },
           }
         );
+
         const updatedCourse = updatedCourseResponse.data.result;
 
-        // تحديث البيانات المعروضة
         formik.setValues({
           teacherIds: updatedCourse.teacherIds,
           day: updatedCourse.day,

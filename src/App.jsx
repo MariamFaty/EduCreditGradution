@@ -51,6 +51,8 @@ import EditAdmin from "./Pages/SuperAdminInformation/ManageAdmins/EditAdmin/Edit
 import EditTeacher from "./Pages/SuperAdminInformation/ManageTeachers/EditTeacher/EditTeacher";
 import InfoEachDepartmentSemester from "./Pages/SuperAdminInformation/ManageSemesters/InfoEachDepartmentSemester/InfoEachDepartmentSemester";
 import DashboardStudent from "./Pages/StudentInformation/DashboardStudent/DashboardStudent";
+import InfoEachCouseOfStudent from "./Pages/StudentInformation/DashboardStudent/InfoEachCouseOfStudent/InfoEachCouseOfStudent";
+import InfoEachCourseInSemester from "./Pages/SuperAdminInformation/ManageSemesters/InfoEachCourseInSemester/InfoEachCourseInSemester";
 
 const router = createBrowserRouter([
   {
@@ -96,6 +98,10 @@ const router = createBrowserRouter([
       {
         path: "ManageSemesters/InfoEashSemester/InfoEachDepartmentSemester/:departmentId/:departmentName",
         element: <InfoEachDepartmentSemester />,
+      },
+      {
+        path: "ManageSemesters/InfoEashSemester/InfoEachDepartmentSemester/InfoEachCourseInSemester/:courseId/:semesterId",
+        element: <InfoEachCourseInSemester />,
       },
       {
         path: "ManageAdmins",
@@ -191,7 +197,11 @@ const router = createBrowserRouter([
         path: "", // المسار الفارغ يعني الصفحة الرئيسية داخل هذا القسم
         element: <DashboardStudent />,
       },
-      ,
+      {
+        path: "InfoEachCouseOfStudent/:courseId",
+        element: <InfoEachCouseOfStudent />,
+      },
+
       {
         path: "PersonalInformation",
         element: <PersonalInformation />,

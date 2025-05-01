@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import axios from "axios";
 import styles from "../../../SuperAdminInformation/ManageStudents/InfoStudent/InfoStudent.module.css";
+import axios from "axios";
 import { baseUrl } from "../../../../Env/Env";
 
-export default function InfoEachCourseAdmin() {
+export default function InfoEachCouseOfStudent() {
   const { courseId } = useParams();
   const [courseData, setCourseData] = useState({
     courseName: "",
@@ -16,6 +16,9 @@ export default function InfoEachCourseAdmin() {
     examStart: "",
     examEnd: "",
     examLocation: "",
+    minimumDegree: 0,
+    creditHours: 0,
+    previousCourse: "",
   });
   const [semesterId, setSemesterId] = useState(null); // State for semesterId
   const [error, setError] = useState(null);
@@ -33,7 +36,7 @@ export default function InfoEachCourseAdmin() {
           Authorization: `Bearer ${token}`,
         },
       });
-      console.log("Semester ID:", response.data.result.id);
+      console.log(response.data.result.id);
       setSemesterId(response.data.result.id);
     } catch (error) {
       console.error("Error fetching semester:", error.message);
@@ -75,6 +78,9 @@ export default function InfoEachCourseAdmin() {
         examStart: response.data.result.examStart || "Not Available",
         examEnd: response.data.result.examEnd || "Not Available",
         examLocation: response.data.result.examLocation || "Not Available",
+        minimumDegree: response.data.result.minimumDegree ?? "Not Available",
+        creditHours: response.data.result.creditHours ?? "Not Available",
+        previousCourse: response.data.result.previousCourse || "Not Available",
       });
     } catch (error) {
       if (error.response) {
@@ -150,6 +156,23 @@ export default function InfoEachCourseAdmin() {
       <div className={styles.row}>
         <span className={styles.Lable}>Exam Location</span>
         <span className={styles.data}>{courseData.examLocation || "N/A"}</span>
+      </div>
+
+      <div className={styles.row}>
+        <span className={styles.Lable}>Credit Hours</span>
+        <span className={styles.data}>{courseData.creditHours || "N/A"}</span>
+      </div>
+
+      <div className={styles.row}>
+        <span className={styles.Lable}>Minimum Degree</span>
+        <span className={styles.data}>{courseData.minimumDegree || "N/A"}</span>
+      </div>
+
+      <div className={styles.row}>
+        <span className={styles.Lable}>Previous Course</span>
+        <span className={styles.data}>
+          {courseData.previousCourse || "N/A"}
+        </span>
       </div>
     </div>
   );

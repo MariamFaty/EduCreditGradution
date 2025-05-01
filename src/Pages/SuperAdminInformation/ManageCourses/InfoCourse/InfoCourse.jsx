@@ -7,6 +7,7 @@ import { baseUrl } from "../../../../Env/Env";
 export default function InfoCourse() {
   const { courseId } = useParams(); // التقاط الـ id من الرابط
   const [courseData, setCourseData] = useState({
+    name: "",
     creditHours: "",
     duration: "",
     minimumDegree: "",
@@ -35,6 +36,7 @@ export default function InfoCourse() {
 
         // تحديث البيانات
         setCourseData({
+          name: response.data.result.name || "Not Available",
           creditHours: response.data.result.creditHours || "Not Available",
           duration: response.data.result.duration || "Not Available",
           minimumDegree: response.data.result.minimumDegree || "Not Available",
@@ -64,7 +66,7 @@ export default function InfoCourse() {
 
   return (
     <div className={styles.personalInfoContainer}>
-      <h1 className={styles.welcomeTitle}>Course Information</h1>
+      <h1 className={styles.welcomeTitle}>{courseData.name}</h1>
 
       <div className={styles.line}></div>
 

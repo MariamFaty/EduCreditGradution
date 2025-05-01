@@ -2,16 +2,24 @@ import React, { useContext, useEffect, useState } from "react";
 import SearchNotification from "../../../Shared/Css/SearchInputNotification.module.css";
 import styles from "./DashboardStudent.module.css";
 import Information from "../../../../src/Shared/Css/InfoAndInformation.module.css";
+import Table from "../../../Shared/Css/TableDesign.module.css";
+import Pagination from "../../../Shared/Css/Pagination.module.css";
 import axios from "axios";
 import { baseUrl } from "../../../Env/Env";
 import { authContext } from "../../../Context/AuthContextProvider";
+import { Link } from "react-router-dom";
 
 export default function DashboardStudent() {
-  const [studentData, setStudentData] = useState(null); // State for student details
+  const [studentData, setStudentData] = useState(null); // State for detailed student data
+  const [studentsList, setStudentsList] = useState([]); // State for list of students
   const { accessToken } = useContext(authContext);
   const [searchTerm, setSearchTerm] = useState("");
+  const [allCourses, setAllCourses] = useState([]); // State for enrolled courses
+  const [semesterId, setSemesterId] = useState(""); // State for current semester ID
+  const [currentPage, setCurrentPage] = useState(1); // State for pagination
+  const pageSize = 3; // Same page size as InfoEachDepartmentAdmin
 
-  // Fetch the student data and ID
+  // Fetch the list of students
   const fetchData = async () => {
     try {
       const response = await axios.get(`${baseUrl}Student`, {
@@ -21,17 +29,17 @@ export default function DashboardStudent() {
           Accept: "text/plain",
         },
       });
-      const student = response.data.result; // Access result directly
-      console.log("Student data:", student);
+      const students = response.data.result.data;
+      console.log("Students list:", students);
 
-      if (student && student.id) {
-        setStudentData(student); // Store the initial student data
-        fetchStudentData(student.id); // Fetch detailed data using the ID
+      if (students && students.length > 0) {
+        setStudentsList(students);
+        fetchStudentData(students[0].id); // Fetch details for the first student
       } else {
-        throw new Error("No student ID found in response");
+        throw new Error("No students found in response");
       }
     } catch (error) {
-      console.error("Error fetching student:", error.message);
+      console.error("Error fetching students:", error.message);
       const errorMessage = error.response?.data?.message || error.message;
       alert(errorMessage);
     }
@@ -47,9 +55,9 @@ export default function DashboardStudent() {
           Accept: "text/plain",
         },
       });
-      const data = response.data.result; // Adjust based on actual response structure
+      const data = response.data.result;
       console.log("Student details:", data);
-      setStudentData(data); // Update with detailed student data
+      setStudentData(data);
     } catch (error) {
       console.error("Error fetching student details:", error.message);
       const errorMessage = error.response?.data?.message || error.message;
@@ -57,12 +65,80 @@ export default function DashboardStudent() {
     }
   };
 
+  // Fetch current semester
+  const fetchCurrentSemester = async () => {
+    try {
+      const response = await axios.get(`${baseUrl}Semester/CurrentSemester`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+      });
+      console.log("Current semester response:", response.data);
+      setSemesterId(response.data.result.id);
+      console.log("Current semester ID:", response.data.result.id);
+    } catch (error) {
+      console.error("Error fetching semester:", {
+        message: error.message,
+        status: error.response?.status,
+        data: error.response?.data,
+      });
+      const errorMessage = error.response?.data?.message || error.message;
+      alert(`Failed to fetch current semester: ${errorMessage}`);
+    }
+  };
+
+  // Fetch enrolled courses for the student
+  const fetchCourses = async () => {
+    if (!semesterId || !studentData?.id) return;
+    try {
+      const response = await axios.get(`${baseUrl}Course`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+        params: {
+          studentId: studentData.id,
+          semesterId: semesterId,
+        },
+      });
+      setAllCourses(response.data.data);
+      console.log("Enrolled courses:", response.data.data);
+    } catch (error) {
+      console.error("Error fetching courses:", error.message);
+    }
+  };
+
+  // Fetch students and semester on mount
   useEffect(() => {
-    fetchData(); // Only call fetchData, which will trigger fetchStudentData
+    const fetchInitialData = async () => {
+      await fetchCurrentSemester();
+      fetchData();
+    };
+    fetchInitialData();
   }, []);
+
+  // Fetch courses when semesterId or studentData changes
+  useEffect(() => {
+    fetchCourses();
+  }, [semesterId, studentData]);
 
   const handleSearchChange = (event) => {
     setSearchTerm(event.target.value);
+  };
+
+  // Filter courses based on search term
+  const filteredCourses = allCourses.filter((course) =>
+    course.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredCourses.length / pageSize);
+
+  const handlePageChange = (page) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
   };
 
   return (
@@ -95,7 +171,7 @@ export default function DashboardStudent() {
             <div className={styles.cardRight}>
               <div className={styles.description}>Credit Hours</div>
               <div className={styles.number}>
-                {studentData ? studentData.obtaindehours : "Loading..."}
+                {studentData ? studentData.obtainedhours : "Loading..."}
               </div>
             </div>
           </div>
@@ -137,13 +213,72 @@ export default function DashboardStudent() {
             <div className={styles.cardRight}>
               <div className={styles.description}>Courses</div>
               <div className={styles.number}>
-                {studentData ? studentData.courses || "N/A" : "Loading..."}
+                {studentData ? studentData.coursesCount || "N/A" : "Loading..."}
               </div>
             </div>
           </div>
         </div>
 
         <div className={`${Information.line}`}></div>
+        <p className={styles.coursetitle}>Enrolled Courses in this Semester</p>
+        <table className={Table.table}>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Course Name</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredCourses
+              .slice((currentPage - 1) * pageSize, currentPage * pageSize)
+              .map((course, index) => (
+                <tr key={course.id}>
+                  <td>{(currentPage - 1) * pageSize + index + 1}</td>
+                  <td>{course.name}</td>
+                  <td>
+                    <button className={Table.infoButton}>
+                      <Link
+                        to={`/StudentRole/InfoEachCouseOfStudent/${course.id}`} // Replace with the correct route for course details
+                        className="fa-solid fa-circle-info"
+                      ></Link>
+                    </button>
+                  </td>
+                </tr>
+              ))}
+          </tbody>
+        </table>
+        <div className={Pagination.pagination}>
+          <button
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className={Pagination.pageButton}
+          >
+            ← Back
+          </button>
+
+          <div className={Pagination.pageNumbers}>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <button
+                key={page}
+                onClick={() => handlePageChange(page)}
+                className={`${Pagination.pageNumber} ${
+                  currentPage === page ? Pagination.activePage : ""
+                }`}
+              >
+                {page}
+              </button>
+            ))}
+          </div>
+
+          <button
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className={Pagination.pageButton}
+          >
+            Next →
+          </button>
+        </div>
       </div>
     </>
   );
