@@ -1,72 +1,26 @@
 import React, { useContext, useEffect, useState } from "react";
-import DataOfStudent from "../../../Shared/Css/DataOfStudent.module.css";
-import Information from "../../../../src/Shared/Css/InfoAndInformation.module.css";
-import styles from "./StudySchedule.module.css";
-import Table from "../../../Shared/Css/TableDesignCenter.module.css";
-import Pagination from "../../../Shared/Css/Pagination.module.css";
-import { Link } from "react-router-dom";
+import DataOfStudent from "../../../../Shared/Css/DataOfStudent.module.css";
+import Information from "../../../../src/../Shared/Css/InfoAndInformation.module.css";
+import styles from "../../../StudentInformation/StudySchedule/StudySchedule.module.css";
+import Table from "../../../../Shared/Css/TableDesignCenter.module.css";
 import axios from "axios";
-import { authContext } from "../../../Context/AuthContextProvider";
-import { baseUrl } from "../../../Env/Env";
+import { authContext } from "../../../../Context/AuthContextProvider";
+import { baseUrl } from "../../../../Env/Env";
+import { useParams } from "react-router-dom";
 
-export default function StudySchedule() {
-  const [studentsList, setStudentsList] = useState([]); // State for list of students
+export default function StudyScheduleAdmin() {
+  const { studentId } = useParams(); // Get studentId from URL params
   const { accessToken } = useContext(authContext);
   const [studentData, setStudentData] = useState(null); // State for detailed student data
   const [allCourses, setAllCourses] = useState([]); // State for study schedule data
 
-  // Fetch the list of students
-  const fetchData = async () => {
-    try {
-      const response = await axios.get(`${baseUrl}Student`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-          Accept: "text/plain",
-        },
-      });
-      const students = response.data.result.data;
-      console.log("Students list:", students);
-
-      if (students && students.length > 0) {
-        setStudentsList(students);
-        fetchStudentId(students[0].id); // Fetch details for the first student
-      } else {
-        throw new Error("No students found in response");
-      }
-    } catch (error) {
-      console.error("Error fetching students:", error.message);
-      const errorMessage = error.response?.data?.message || error.message;
-      alert(errorMessage);
-    }
-  };
-
-  // Fetch detailed student data by ID
-  const fetchStudentId = async (id) => {
-    try {
-      const response = await axios.get(`${baseUrl}Student/${id}`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-          Accept: "text/plain",
-        },
-      });
-      const data = response.data.result;
-      console.log("Student details:", data);
-      setStudentData(data);
-    } catch (error) {
-      console.error("Error fetching student details:", error.message);
-      const errorMessage = error.response?.data?.message || error.message;
-      alert(errorMessage);
-    }
-  };
-
-  // Fetch study schedule for the student
+  // Fetch study schedule and student data for the student
   const fetchStudySchedule = async () => {
-    if (!studentData?.id) return; // Wait until studentData is available
+    if (!studentId) return; // Wait until studendId is available
+    console.log(studentId);
     try {
       const response = await axios.get(
-        `${baseUrl}Schedule/Study-Schedule/${studentData.id}`,
+        `${baseUrl}Schedule/Study-Schedule/${studentId}`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -75,9 +29,11 @@ export default function StudySchedule() {
           },
         }
       );
-      console.log("Study schedule response:", response.data);
-      const scheduleData = response.data.result[0]?.schedules || []; // Extract the schedules array
+      console.log("Study schedule response:", response);
+      const result = response.data.result[0]; // Get the first result object
+      const scheduleData = result?.schedules || []; // Extract the schedules array
       setAllCourses(scheduleData); // Update state with fetched schedule data
+      setStudentData(result); // Extract student data from the response
     } catch (error) {
       console.error("Error fetching study schedule:", {
         message: error.message,
@@ -89,18 +45,12 @@ export default function StudySchedule() {
     }
   };
 
-  // Fetch students on mount
+  // Fetch data on mount or when studendId changes
   useEffect(() => {
-    const fetchInitialData = async () => {
-      await fetchData();
-    };
-    fetchInitialData();
-  }, []);
-
-  // Fetch study schedule when studentData changes
-  useEffect(() => {
-    fetchStudySchedule();
-  }, [studentData]);
+    if (studentId) {
+      fetchStudySchedule();
+    }
+  }, [studentId]);
 
   return (
     <div className={DataOfStudent.studentInfoContainer}>

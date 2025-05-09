@@ -53,6 +53,9 @@ import InfoEachDepartmentSemester from "./Pages/SuperAdminInformation/ManageSeme
 import DashboardStudent from "./Pages/StudentInformation/DashboardStudent/DashboardStudent";
 import InfoEachCouseOfStudent from "./Pages/StudentInformation/DashboardStudent/InfoEachCouseOfStudent/InfoEachCouseOfStudent";
 import InfoEachCourseInSemester from "./Pages/SuperAdminInformation/ManageSemesters/InfoEachCourseInSemester/InfoEachCourseInSemester";
+import StudyScheduleAdmin from "./Pages/AdminInformation/ManageStudentAdmin/StudySchedule/StudyScheduleAdmin";
+import CoursesResultAdmin from "./Pages/AdminInformation/ManageStudentAdmin/CoursesResultAdmin/CoursesResultAdmin";
+import EnrollOfCoursesByAdmin from "./Pages/AdminInformation/ManageStudentAdmin/EnrollOfCoursesByAdmin/EnrollOfCoursesByAdmin";
 
 const router = createBrowserRouter([
   {
@@ -252,6 +255,18 @@ const router = createBrowserRouter([
       {
         path: "ManageStudentAdmin/AddStudentAdmin",
         element: <AddStudentAdmin />,
+      },
+      {
+        path: "ManageStudentAdmin/StudyScheduleAdmin/:studentId",
+        element: <StudyScheduleAdmin />,
+      },
+      {
+        path: "ManageStudentAdmin/CoursesResultAdmin/:studentId",
+        element: <CoursesResultAdmin />,
+      },
+      {
+        path: "ManageStudentAdmin/EnrollOfCoursesByAdmin/:studentId",
+        element: <EnrollOfCoursesByAdmin />,
       },
       {
         path: "ManageStudentAdmin/EditStudentAdmin/:studentId",

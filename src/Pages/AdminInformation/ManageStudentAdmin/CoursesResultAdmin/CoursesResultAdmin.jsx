@@ -1,14 +1,15 @@
 import React, { useContext, useEffect, useState } from "react";
-import DataOfStudent from "../../../Shared/Css/DataOfStudent.module.css";
-import Information from "../../../../src/Shared/Css/InfoAndInformation.module.css";
-import styles from "./CourseResults.module.css";
-import Table from "../../../Shared/Css/TableDesignCenter.module.css";
+import DataOfStudent from "../../../../Shared/Css/DataOfStudent.module.css";
+import Information from "../../../../src/../Shared/Css/InfoAndInformation.module.css";
+import styles from "../../../StudentInformation/CourseResults/CourseResults.module.css";
+import Table from "../../../../Shared/Css/TableDesignCenter.module.css";
 import axios from "axios";
-import { authContext } from "../../../Context/AuthContextProvider";
-import { baseUrl } from "../../../Env/Env";
+import { authContext } from "../../../../Context/AuthContextProvider";
+import { baseUrl } from "../../../../Env/Env";
+import { useParams } from "react-router-dom";
 
-export default function CourseResults() {
-  const [studentsList, setStudentsList] = useState([]); // State for list of students
+export default function CoursesResultAdmin() {
+  const { studentId } = useParams(); // Get studentId from URL params
   const { accessToken } = useContext(authContext);
   const [studentData, setStudentData] = useState(null); // State for student data from Enrollment/Results
   const [allSemesters, setAllSemesters] = useState([]); // State for all semesters
@@ -25,34 +26,8 @@ export default function CourseResults() {
     7: "F",
   };
 
-  // Fetch the list of students to get student ID
-  const fetchData = async () => {
-    try {
-      const response = await axios.get(`${baseUrl}Student`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-          Accept: "text/plain",
-        },
-      });
-      const students = response.data.result.data;
-      console.log("Students list:", students);
-
-      if (students && students.length > 0) {
-        setStudentsList(students);
-        fetchCourseResults(students[0].id); // Fetch course results using the first student's ID
-      } else {
-        throw new Error("No students found in response");
-      }
-    } catch (error) {
-      console.error("Error fetching students:", error.message);
-      const errorMessage = error.response?.data?.message || error.message;
-      alert(errorMessage);
-    }
-  };
-
   // Fetch course data and student data for the student
-  const fetchCourseResults = async (studentId) => {
+  const fetchCourseResults = async () => {
     if (!studentId) return; // Wait until studentId is available
     try {
       const response = await axios.get(
@@ -103,13 +78,12 @@ export default function CourseResults() {
     setAllCourses(selectedSemester ? selectedSemester.courses || [] : []);
   };
 
-  // Fetch students on mount
+  // Fetch data on mount or when studentId changes
   useEffect(() => {
-    const fetchInitialData = async () => {
-      await fetchData();
-    };
-    fetchInitialData();
-  }, []);
+    if (studentId) {
+      fetchCourseResults();
+    }
+  }, [studentId]);
 
   // Find the selected semester to get its data for the footer
   const selectedSemester =

@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import DataOfStudent from "../../../Shared/Css/DataOfStudent.module.css";
 import Information from "../../../../src/Shared/Css/InfoAndInformation.module.css";
 import styles from "./ExamSchedule.module.css"; // Assuming same styles as StudySchedule
-import Table from "../../../Shared/Css/TableDesign.module.css";
+import Table from "../../../Shared/Css/TableDesignCenter.module.css";
 import axios from "axios";
 import { authContext } from "../../../Context/AuthContextProvider";
 import { baseUrl } from "../../../Env/Env";

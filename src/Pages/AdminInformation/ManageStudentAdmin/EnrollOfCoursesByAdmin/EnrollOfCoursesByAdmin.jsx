@@ -1,13 +1,14 @@
 import React, { useContext, useEffect, useState } from "react";
-import DataOfStudent from "./EnrollOfCourses.module.css";
-import Table from "../../../Shared/Css/TableDesignCenter.module.css";
+import DataOfStudent from "../../../StudentInformation/EnrollOfCourses/EnrollOfCourses.module.css";
+import Table from "../../../../Shared/Css/TableDesignCenter.module.css";
 import axios from "axios";
-import { authContext } from "../../../Context/AuthContextProvider";
-import { baseUrl } from "../../../Env/Env";
+import { authContext } from "../../../../Context/AuthContextProvider";
+import { baseUrl } from "../../../../Env/Env";
 import Swal from "sweetalert2";
+import { useParams } from "react-router-dom";
 
-export default function EnrollOfCourses() {
-  const [studentsList, setStudentsList] = useState([]); // State for list of students
+export default function EnrollOfCoursesByAdmin() {
+  const { studentId } = useParams(); // Get studentId from URL params
   const { accessToken } = useContext(authContext);
   const [studentData, setStudentData] = useState(null); // State for student data
   const [availableCourses, setAvailableCourses] = useState([]); // State for available courses
@@ -16,39 +17,8 @@ export default function EnrollOfCourses() {
   const [studentNote, setStudentNote] = useState(""); // State for student note in the modal
   const [modalOpen, setModalOpen] = useState(false); // State to control modal visibility
 
-  // Fetch the list of students to get student ID
-  const fetchData = async () => {
-    try {
-      const response = await axios.get(`${baseUrl}Student`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-          Accept: "text/plain",
-        },
-      });
-      const students = response.data.result.data;
-      console.log("Students list:", students);
-
-      if (students && students.length > 0) {
-        setStudentsList(students);
-        fetchEnrollmentData(students[0].id); // Fetch enrollment data using the first student's ID
-      } else {
-        throw new Error("No students found in response");
-      }
-    } catch (error) {
-      console.error("Error fetching students:", error.message);
-      const errorMessage = error.response?.data?.message || error.message;
-      Swal.fire({
-        icon: "error",
-        title: "error",
-        text: errorMessage,
-        confirmButtonText: "Ok!",
-      });
-    }
-  };
-
   // Fetch enrollment data for the student
-  const fetchEnrollmentData = async (studentId) => {
+  const fetchEnrollmentData = async () => {
     if (!studentId) return; // Wait until studentId is available
     try {
       const response = await axios.get(
@@ -128,13 +98,12 @@ export default function EnrollOfCourses() {
     }
   };
 
-  // Fetch students on mount
+  // Fetch data on mount or when studentId changes
   useEffect(() => {
-    const fetchInitialData = async () => {
-      await fetchData();
-    };
-    fetchInitialData();
-  }, []);
+    if (studentId) {
+      fetchEnrollmentData();
+    }
+  }, [studentId]);
 
   // Function to handle enrolling a course when clicking the "+" button
   const handleEnrollCourse = (course) => {
@@ -290,11 +259,10 @@ export default function EnrollOfCourses() {
     try {
       // Prepare data for POST request
       const scheduleIds = enrolledCourses.map((course) => course.courseId);
-      const studentId = studentsList.length > 0 ? studentsList[0].id : null; // Get the first student's ID
       const dataToSend = {
         scheduleIds: scheduleIds,
         studentNotes: studentNote,
-        studentId: studentId, // Add studentId to the payload
+        studentId: studentId, // Use studentId from params
       };
 
       // Send POST request to the actual endpoint
@@ -318,9 +286,7 @@ export default function EnrollOfCourses() {
       });
       setModalOpen(false); // Close the modal
       setStudentNote(""); // Reset the textarea
-      if (studentId) {
-        await fetchEnrollmentData(studentId); // Refresh data after saving
-      }
+      await fetchEnrollmentData(); // Refresh data after saving
     } catch (error) {
       console.error("Error saving enrollment:", {
         message: error.message,
@@ -565,14 +531,14 @@ export default function EnrollOfCourses() {
               <div className="flex justify-end gap-2">
                 <button
                   type="button"
-                  className="text-black bg-white border border-gray-400 cursor-pointer  focus:outline-none font-medium rounded-lg text-sm px-5 py-2.5 text-center"
+                  className="text-black bg-white border border-gray-400 cursor-pointer focus:outline-none font-medium rounded-lg text-sm px-5 py-2.5 text-center"
                   onClick={handleCancel}
                 >
                   Cancel
                 </button>
                 <button
                   type="button"
-                  className="text-white inline-flex items-center bg-[#4CAAD1] cursor-pointer focus:outline-none font-medium rounded-lg text-sm px-5 py-2.5 text-center "
+                  className="text-white inline-flex items-center bg-[#4CAAD1] cursor-pointer focus:outline-none font-medium rounded-lg text-sm px-5 py-2.5 text-center"
                   onClick={handleSave}
                 >
                   Save

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useContext } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import axios from "axios";
 import styles from "../../../SuperAdminInformation/ManageStudents/InfoStudent/InfoStudent.module.css"; // Adjusted to use InfoStudentAdmin.module.css
 import { baseUrl } from "../../../../Env/Env";
@@ -105,9 +105,21 @@ export default function InfoStudentAdmin() {
       </div>
 
       <div className={styles.buttonContainer}>
-        <button className={styles.button}>Enroll of Courses</button>
-        <button className={styles.button}>Study Schedule</button>
-        <button className={styles.button}>Course Results</button>
+        <Link
+          to={`/AdminRole/ManageStudentAdmin/EnrollOfCoursesByAdmin/${studentId}`}
+        >
+          <button className={styles.button}>Enroll of Courses</button>
+        </Link>
+        <Link
+          to={`/AdminRole/ManageStudentAdmin/StudyScheduleAdmin/${studentId}`}
+        >
+          <button className={styles.button}>Study Schedule</button>
+        </Link>
+        <Link
+          to={`/AdminRole/ManageStudentAdmin/CoursesResultAdmin/${studentId}`}
+        >
+          <button className={styles.button}>Course Results</button>
+        </Link>
       </div>
     </div>
   );
