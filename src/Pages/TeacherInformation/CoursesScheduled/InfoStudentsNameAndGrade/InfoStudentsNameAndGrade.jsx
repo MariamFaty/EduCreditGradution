@@ -1,43 +1,54 @@
 import React, { useContext, useEffect, useState } from "react";
-import Search from "../../../Shared/Css/SearchInput.module.css";
-import styles from "./CoursesScheduled.module.css";
-import Table from "../../../Shared/Css/TableDesign.module.css";
+import Search from "../../../../Shared/Css/SearchInput.module.css";
+import styles from "../CoursesScheduled.module.css";
+import Table from "../../../../Shared/Css/TableDesign.module.css";
 import { Link } from "react-router-dom";
 import axios from "axios";
-import { authContext } from "../../../Context/AuthContextProvider";
-import { baseUrl } from "../../../Env/Env";
+import { authContext } from "../../../../Context/AuthContextProvider";
+import { baseUrl } from "../../../../Env/Env";
 import Swal from "sweetalert2";
-import Pagination from "../../../Shared/Css/Pagination.module.css"; // Import Pagination styles
+import Pagination from "../../../../Shared/Css/Pagination.module.css"; // Import Pagination styles
 
-export default function CoursesScheduled() {
-  const [schedules, setSchedules] = useState([]);
-  const [filteredSchedules, setFilteredSchedules] = useState([]); // State for filtered data
+export default function InfoStudentsNameAndGrade() {
+  const [students, setStudents] = useState([]); // State for flattened student data
+  const [filteredStudents, setFilteredStudents] = useState([]); // State for filtered student data
   const [searchTerm, setSearchTerm] = useState(""); // State for search input
   const { decodedToken, accessToken } = useContext(authContext);
   const [teacherId, setTeacherId] = useState("");
   const [currentPage, setCurrentPage] = useState(1); // State for current page
   const pageSize = 4; // Number of items per page
 
-  // Fetch course data for the table
+  // Fetch course data and flatten the students array
   const fetchCourses = async () => {
     if (!teacherId) return;
     try {
       const response = await axios.get(
-        `https://educredit.runasp.net/api/Course/${teacherId}/courses`,
+        `${baseUrl}Course/${teacherId}/courses`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
         }
       );
-      setSchedules(response.data.result);
-      setFilteredSchedules(response.data.result); // Initialize filtered data
+
+      // Flatten the students array from all courses and include courseId
+      const allStudents = response.data.result.flatMap((course) =>
+        course.students.map((student) => ({
+          enrollmentTableId: student.enrollmentTableId,
+          studentName: student.studentName,
+          grade: student.grade,
+          courseId: course.id, // Include courseId for each student
+        }))
+      );
+
+      setStudents(allStudents);
+      setFilteredStudents(allStudents); // Initialize filtered data
     } catch (error) {
       const errorMessage = error.response?.data?.message || error.message;
       Swal.fire({
         icon: "error",
         title: "Error!",
-        text: `Failed to fetch courses: ${errorMessage}`,
+        text: `Failed to fetch student data: ${errorMessage}`,
         confirmButtonText: "Ok!",
       });
     }
@@ -49,11 +60,11 @@ export default function CoursesScheduled() {
     setSearchTerm(term);
     setCurrentPage(1); // Reset to first page on new search
 
-    // Filter schedules based on the search term (case-insensitive)
-    const filtered = schedules.filter((schedule) =>
-      schedule.name.toLowerCase().includes(term.toLowerCase())
+    // Filter students based on the search term (case-insensitive)
+    const filtered = students.filter((student) =>
+      student.studentName.toLowerCase().includes(term.toLowerCase())
     );
-    setFilteredSchedules(filtered);
+    setFilteredStudents(filtered);
   };
 
   // Handle page change
@@ -70,11 +81,11 @@ export default function CoursesScheduled() {
 
   useEffect(() => {
     if (teacherId) {
-      fetchCourses(); // Fetch courses once teacherId is available
+      fetchCourses(); // Fetch data once teacherId is available
     }
   }, [teacherId]);
 
-  const totalPages = Math.ceil(filteredSchedules.length / pageSize);
+  const totalPages = Math.ceil(filteredStudents.length / pageSize);
 
   return (
     <>
@@ -93,30 +104,24 @@ export default function CoursesScheduled() {
           <thead>
             <tr>
               <th>#</th>
-              <th>Courses Name</th>
-              <th>Count</th>
+              <th>Student Name</th>
+              <th>Grade</th>
               <th>Action</th>
             </tr>
           </thead>
           <tbody>
-            {filteredSchedules.length > 0 ? (
-              filteredSchedules
+            {filteredStudents.length > 0 ? (
+              filteredStudents
                 .slice((currentPage - 1) * pageSize, currentPage * pageSize)
-                .map((schedule, index) => (
-                  <tr key={schedule.id}>
+                .map((student, index) => (
+                  <tr key={student.enrollmentTableId}>
                     <td>{(currentPage - 1) * pageSize + index + 1}</td>
-                    <td>{schedule.name}</td>
-                    <td>{schedule.count}</td>
+                    <td>{student.studentName}</td>
+                    <td>{student.grade}</td>
                     <td className={Table.actionButtons}>
-                      <button className={Table.infoButton}>
-                        <Link
-                          to={`/TeacherRole/InfoOfEachCourseByTeacher/${schedule.id}`}
-                          className="fa-solid fa-circle-info"
-                        ></Link>
-                      </button>
                       <button className={Table.editButton}>
                         <Link
-                          to={`/TeacherRole/CoursesScheduled/InfoStudentsNameAndGrade/${schedule.id}`}
+                          to={`/TeacherRole/CoursesScheduled/InfoStudentsNameAndGrade/EditStudentGrade/${student.enrollmentTableId}/${student.courseId}`}
                           className="fas fa-edit"
                         ></Link>
                       </button>
@@ -127,8 +132,8 @@ export default function CoursesScheduled() {
               <tr>
                 <td colSpan="4">
                   {searchTerm
-                    ? "No matching courses found."
-                    : "No scheduled courses found."}
+                    ? "No matching students found."
+                    : "No student data found."}
                 </td>
               </tr>
             )}

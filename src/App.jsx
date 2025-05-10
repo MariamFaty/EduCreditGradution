@@ -56,6 +56,12 @@ import InfoEachCourseInSemester from "./Pages/SuperAdminInformation/ManageSemest
 import StudyScheduleAdmin from "./Pages/AdminInformation/ManageStudentAdmin/StudySchedule/StudyScheduleAdmin";
 import CoursesResultAdmin from "./Pages/AdminInformation/ManageStudentAdmin/CoursesResultAdmin/CoursesResultAdmin";
 import EnrollOfCoursesByAdmin from "./Pages/AdminInformation/ManageStudentAdmin/EnrollOfCoursesByAdmin/EnrollOfCoursesByAdmin";
+import InfoOfEachCourseByTeacher from "./Pages/TeacherInformation/DashboardTeacher/InfoOfEachCourseByTeacher/InfoOfEachCourseByTeacher";
+import InfoStudentsNameAndGrade from "./Pages/TeacherInformation/CoursesScheduled/InfoStudentsNameAndGrade/InfoStudentsNameAndGrade";
+import EditStudentGrade from "./Pages/TeacherInformation/CoursesScheduled/EditStudentGrade/EditStudentGrade";
+import StudyScheduleTeacher from "./Pages/TeacherInformation/ManageGuidance/StudyScheduleTeacher/StudyScheduleTeacher";
+import CourseResultsByTeachers from "./Pages/TeacherInformation/ManageGuidance/StudyScheduleTeacher/CourseResultsByTeachers/CourseResultsByTeachers";
+import AvailableCourses from "./Pages/TeacherInformation/ManageGuidance/StudyScheduleTeacher/AvailableCourses/AvailableCourses";
 
 const router = createBrowserRouter([
   {
@@ -287,6 +293,18 @@ const router = createBrowserRouter([
         element: <DashboardTeacher />,
       },
       {
+        path: "/TeacherRole/InfoOfEachCourseByTeacher/:courseId", // المسار الفارغ يعني الصفحة الرئيسية داخل هذا القسم
+        element: <InfoOfEachCourseByTeacher />,
+      },
+      {
+        path: "/TeacherRole/CoursesScheduled/InfoStudentsNameAndGrade/:courseId", // المسار الفارغ يعني الصفحة الرئيسية داخل هذا القسم
+        element: <InfoStudentsNameAndGrade />,
+      },
+      {
+        path: "/TeacherRole/CoursesScheduled/InfoStudentsNameAndGrade/EditStudentGrade/:enrollmentTableId/:courseId", // المسار الفارغ يعني الصفحة الرئيسية داخل هذا القسم
+        element: <EditStudentGrade />,
+      },
+      {
         path: "PersonalInformation",
         element: <PersonalInformation />,
       },
@@ -297,6 +315,18 @@ const router = createBrowserRouter([
       {
         path: "ManageGuidance",
         element: <ManageGuidance />,
+      },
+      {
+        path: "/TeacherRole/ManageGuidance/StudyScheduleTeacher/:studentId",
+        element: <StudyScheduleTeacher />,
+      },
+      {
+        path: "/TeacherRole/ManageGuidance/StudyScheduleTeacher/CourseResultsByTeachers/:studentId",
+        element: <CourseResultsByTeachers />,
+      },
+      {
+        path: "/TeacherRole/ManageGuidance/StudyScheduleTeacher/AvailableCourses/:studentId",
+        element: <AvailableCourses />,
       },
     ],
   },
