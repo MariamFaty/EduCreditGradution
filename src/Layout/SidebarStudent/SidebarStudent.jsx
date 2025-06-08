@@ -56,6 +56,12 @@ export default function SidebarStudent() {
                 <p>Course Results</p>
               </NavLink>
             </li>
+            <li>
+              <NavLink to="/StudentRole/StudentChat">
+                <i class="fa-regular fa-message"></i>
+                <p>Chats</p>
+              </NavLink>
+            </li>
           </ul>
           <h3 className={SidebarStudentStyle.SecondTitle}>OTHER</h3>
           <ul className={SidebarStudentStyle.menu}>

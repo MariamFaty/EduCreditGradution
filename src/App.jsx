@@ -62,6 +62,7 @@ import EditStudentGrade from "./Pages/TeacherInformation/CoursesScheduled/EditSt
 import StudyScheduleTeacher from "./Pages/TeacherInformation/ManageGuidance/StudyScheduleTeacher/StudyScheduleTeacher";
 import CourseResultsByTeachers from "./Pages/TeacherInformation/ManageGuidance/StudyScheduleTeacher/CourseResultsByTeachers/CourseResultsByTeachers";
 import AvailableCourses from "./Pages/TeacherInformation/ManageGuidance/StudyScheduleTeacher/AvailableCourses/AvailableCourses";
+import StudentChat from "./Pages/StudentInformation/StudentChat/StudentChat";
 
 const router = createBrowserRouter([
   {
@@ -218,6 +219,10 @@ const router = createBrowserRouter([
       {
         path: "EnrollOfCourses",
         element: <EnrollOfCourses />,
+      },
+      {
+        path: "StudentChat",
+        element: <StudentChat />,
       },
       {
         path: "StudySchedule",
