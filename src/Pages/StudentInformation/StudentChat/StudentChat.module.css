@@ -168,6 +168,8 @@
      overflow-y: auto;
      display: flex;
      flex-direction: column-reverse;
+     display: flex;
+     flex-direction: column-reverse;
      /* Start from bottom and scroll upward */
 }
 
