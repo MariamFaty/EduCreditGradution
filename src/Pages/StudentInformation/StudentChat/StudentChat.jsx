@@ -40,7 +40,6 @@ export default function StudentChat() {
     }
   };
 
-  // جلب الرسائل
   const fetchMessages = async (groupId) => {
     try {
       const response = await axios.get(`${baseUrl}Chat/${groupId}/messages`, {
@@ -48,7 +47,6 @@ export default function StudentChat() {
       });
       setMessages(response.data);
     } catch (error) {
-      // يمكن عرض رسالة خطأ هنا إذا أردت
       console.log(error)
     }
   };
@@ -58,25 +56,21 @@ export default function StudentChat() {
     if (id && accessToken) {
       fetchChatGroups();
     }
-    // eslint-disable-next-line
   }, [id, accessToken]);
 
-  // جلب الرسائل عند تغيير الجروب
   useEffect(() => {
     if (!selectedCourseId) return;
     fetchMessages(selectedCourseId);
-    // إعداد polling لجلب الرسائل كل 5 ثواني
     if (pollingRef.current) clearInterval(pollingRef.current);
     pollingRef.current = setInterval(() => {
       fetchMessages(selectedCourseId);
-    }, 5000);
+    }, 50000000);
     return () => {
       if (pollingRef.current) clearInterval(pollingRef.current);
     };
     // eslint-disable-next-line
   }, [selectedCourseId, accessToken]);
 
-  // إرسال رسالة
   const sendMessage = async () => {
     if (!input.trim()) return;
     try {
@@ -91,21 +85,18 @@ export default function StudentChat() {
         }
       );
       setInput("");
-      fetchMessages(selectedCourseId); // جلب الرسائل بعد الإرسال مباشرة
+      fetchMessages(selectedCourseId); 
     } catch (err) {
-      // يمكن عرض رسالة خطأ هنا إذا 
       console.log(err)
     }
   };
 
-  // واجهة المستخدم
   return (
     <div className={styles.content}>
       {isLoading ? (
         <div>Loading...</div>
       ) : (
         <div className={styles.container}>
-          {/* Sidebar */}
           <div className={styles.sidebar}>
             <div className={styles.sidebarHeader}>
               <h2 className={styles.headerTitle}>Chats</h2>
@@ -130,9 +121,7 @@ export default function StudentChat() {
                       <p className={styles.chatName}>
                         {group.groupName || "Unknown"}
                       </p>
-                      <span className={styles.chatTime}>
-                        {new Date(group.lastMessageTime).toLocaleString() || "N/A"}
-                      </span>
+          
                     </div>
                     <p className={styles.chatPreview}>
                       {group.lastMessageText || "No messages yet..."}
@@ -156,7 +145,6 @@ export default function StudentChat() {
                       ?.groupName || "Select a chat"}
                   </h2>
                   <p className={styles.chatPreview}>
-                    {/* لا يوجد typing indicator بدون SignalR */}
                   </p>
                 </div>
               </div>
