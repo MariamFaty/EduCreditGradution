@@ -63,6 +63,7 @@ import StudyScheduleTeacher from "./Pages/TeacherInformation/ManageGuidance/Stud
 import CourseResultsByTeachers from "./Pages/TeacherInformation/ManageGuidance/StudyScheduleTeacher/CourseResultsByTeachers/CourseResultsByTeachers";
 import AvailableCourses from "./Pages/TeacherInformation/ManageGuidance/StudyScheduleTeacher/AvailableCourses/AvailableCourses";
 import StudentChat from "./Pages/StudentInformation/StudentChat/StudentChat";
+import ForgetPassword from "./Pages/Auth/ForgetPassword";
 
 const router = createBrowserRouter([
   {
@@ -334,6 +335,10 @@ const router = createBrowserRouter([
         element: <AvailableCourses />,
       },
     ],
+  },
+  {
+    path: "/auth/forget-password",
+    element: <ForgetPassword />,
   },
 ]);
 
