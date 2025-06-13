@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import styles from "./ForgetPassword.module.css";
 import axios from "axios";
 import { baseUrl } from "../../Env/Env";
+import { logo } from "../../assets/Icons/Logo";
 
 export default function ForgetPassword() {
   const [email, setEmail] = useState("");
@@ -38,19 +39,24 @@ export default function ForgetPassword() {
   return (
     <div className={styles.forgetPasswordContainer}>
       <form className={styles.form} onSubmit={handleSubmit}>
-        <h2 className={styles.title}>Forgot Password</h2>
+        <div className={`${styles.Logo}`}>{logo}</div>
+        <h2 className={styles.title}>Forgot Password?</h2>{" "}
         <p className={styles.subtitle}>
-          Enter your email address and we'll send you a link to reset your
-          password.
-        </p>
-        <input
-          type="email"
-          className={styles.input}
-          placeholder="Email Address"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
+          Enter your email to receive a password link.
+        </p>{" "}
+        <div className={styles.inputWrapper}>
+          <label className={styles.label}>Email</label>
+
+          <i className="fa-solid fa-envelope"></i>
+          <input
+            type="email"
+            className={styles.input}
+            placeholder="Email Address"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+        </div>
         <button className={styles.button} type="submit" disabled={loading}>
           {loading ? "Sending..." : "Send Reset Link"}
         </button>

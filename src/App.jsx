@@ -64,6 +64,8 @@ import CourseResultsByTeachers from "./Pages/TeacherInformation/ManageGuidance/S
 import AvailableCourses from "./Pages/TeacherInformation/ManageGuidance/StudyScheduleTeacher/AvailableCourses/AvailableCourses";
 import StudentChat from "./Pages/StudentInformation/StudentChat/StudentChat";
 import ForgetPassword from "./Pages/Auth/ForgetPassword";
+import ChangePassword from "./Pages/Auth/ChangePassword";
+import ResetPassword from "./Pages/Auth/ResetPassword";
 
 const router = createBrowserRouter([
   {
@@ -339,6 +341,14 @@ const router = createBrowserRouter([
   {
     path: "/auth/forget-password",
     element: <ForgetPassword />,
+  },
+  {
+    path: "/auth/change-password",
+    element: <ChangePassword />,
+  },
+  {
+    path: "/auth/reset-password",
+    element: <ResetPassword />,
   },
 ]);
 

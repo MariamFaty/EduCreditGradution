@@ -155,7 +155,10 @@ export default function Login() {
                 <input type="checkbox" /> {/* radio -> checkbox */}
                 Remember Me
               </label>
-              <Link to="/auth/forget-password" className={`${LoginStyle.ForgotPassword}`}>
+              <Link
+                to="/auth/forget-password"
+                className={`${LoginStyle.ForgotPassword}`}
+              >
                 Forgot Password?
               </Link>
             </div>

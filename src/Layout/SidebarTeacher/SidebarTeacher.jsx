@@ -124,15 +124,15 @@ export default function SidebarTeacher() {
 
           <h3 className={SidebarTeacherStyle.SecondTitle}>OTHER</h3>
           <ul className={SidebarTeacherStyle.menu}>
+            {" "}
             <li>
               <NavLink
-                to="/TeacherRole/reset-password"
+                to="/auth/change-password"
                 className={({ isActive }) =>
                   `${isActive ? "bg-[#E6E6E6]" : "text-gray-600"}`
                 }
               >
-                <i className="fa-solid fa-right-from-bracket"></i>{" "}
-                <p>Reset Password</p>
+                <i className="fa-solid fa-key"></i> <p>Change Password</p>
               </NavLink>
             </li>
             <li>

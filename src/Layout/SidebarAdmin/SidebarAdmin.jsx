@@ -115,14 +115,14 @@ export default function SidebarAdmin() {
           <h3 className={SidebarAdminStyle.SecondTitle}>OTHER</h3>
           <ul className={SidebarAdminStyle.menu}>
             <li>
+              {" "}
               <NavLink
-                to="/AdminRole/reset-password"
+                to="/auth/change-password"
                 className={({ isActive }) =>
                   `${isActive ? "bg-[#E6E6E6]" : "text-gray-600"}`
                 }
               >
-                <i className="fa-solid fa-right-from-bracket"></i>{" "}
-                <p>Reset Password</p>
+                <i className="fa-solid fa-key"></i> <p>Change Password</p>
               </NavLink>
             </li>
             <li>
