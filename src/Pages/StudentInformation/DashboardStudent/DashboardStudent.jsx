@@ -1,4 +1,6 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
+import { useLocation } from "react-router-dom";
+import * as signalR from "@microsoft/signalr";
 import SearchNotification from "../../../Shared/Css/SearchInputNotification.module.css";
 import styles from "./DashboardStudent.module.css";
 import Information from "../../../../src/Shared/Css/InfoAndInformation.module.css";
@@ -17,7 +19,67 @@ export default function DashboardStudent() {
   const [allCourses, setAllCourses] = useState([]); // State for enrolled courses
   const [semesterId, setSemesterId] = useState(""); // State for current semester ID
   const [currentPage, setCurrentPage] = useState(1); // State for pagination
+  const [notifications, setNotifications] = useState([]);
+  const [showNotifications, setShowNotifications] = useState(false);
   const pageSize = 3; // Same page size as InfoEachDepartmentAdmin
+  const location = useLocation();
+  const notificationRef = useRef(null);
+
+  // Initialize SignalR connection
+  useEffect(() => {
+    const connection = new signalR.HubConnectionBuilder()
+      .withUrl("https://educredit.runasp.net/notificationHub", {
+        accessTokenFactory: () => accessToken,
+      })
+      .withAutomaticReconnect()
+      .build();
+
+    connection.on("EnrollmentStatusUpdated", (message) => {
+      setNotifications((prev) => [
+        {
+          id: Date.now(),
+          message,
+          type: "enrollment",
+          read: false,
+          timestamp: new Date(),
+        },
+        ...prev,
+      ]);
+    });
+
+    connection.on("StudentEnrollmentChanged", (message) => {
+      setNotifications((prev) => [
+        {
+          id: Date.now(),
+          message,
+          type: "status",
+          read: false,
+          timestamp: new Date(),
+        },
+        ...prev,
+      ]);
+      // Refresh the courses list when enrollment changes
+      fetchCourses();
+    });
+
+    const startConnection = async () => {
+      try {
+        await connection.start();
+        console.log("SignalR Connected");
+      } catch (err) {
+        console.error("SignalR Connection Error: ", err);
+        setTimeout(startConnection, 5000);
+      }
+    };
+
+    startConnection();
+
+    return () => {
+      if (connection) {
+        connection.stop();
+      }
+    };
+  }, [accessToken]);
 
   // Fetch the list of students
   const fetchData = async () => {
@@ -141,6 +203,47 @@ export default function DashboardStudent() {
     }
   };
 
+  const toggleNotifications = () => {
+    setShowNotifications(!showNotifications);
+  };
+
+  const markAsRead = (notificationId) => {
+    setNotifications((prev) =>
+      prev.map((notification) =>
+        notification.id === notificationId
+          ? { ...notification, read: true }
+          : notification
+      )
+    );
+  };
+
+  const clearAllNotifications = () => {
+    setNotifications([]);
+  };
+
+  // Close popup on outside click
+  useEffect(() => {
+    if (!showNotifications) return;
+    function handleClickOutside(event) {
+      if (
+        notificationRef.current &&
+        !notificationRef.current.contains(event.target) &&
+        !event.target.closest(`.${SearchNotification.notificationIcon}`)
+      ) {
+        setShowNotifications(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showNotifications]);
+
+  // Close popup on route change
+  useEffect(() => {
+    setShowNotifications(false);
+  }, [location]);
+
   return (
     <>
       <div className={SearchNotification.searchWrapper}>
@@ -155,11 +258,59 @@ export default function DashboardStudent() {
               onChange={handleSearchChange}
             />
           </div>
-          <div className={SearchNotification.notificationIcon}>
+          <div
+            className={SearchNotification.notificationIcon}
+            onClick={toggleNotifications}
+          >
             <i className="far fa-bell"></i>
+            {notifications.filter((n) => !n.read).length > 0 && (
+              <span className={styles.notificationBadge}>
+                {notifications.filter((n) => !n.read).length}
+              </span>
+            )}
           </div>
         </div>
       </div>
+
+      {showNotifications && (
+        <div className={styles.notificationPopup} ref={notificationRef}>
+          <div className={styles.notificationHeader}>
+            <h3>Notifications</h3>
+            <button
+              className={styles.clearButton}
+              onClick={clearAllNotifications}
+            >
+              Clear All
+            </button>
+          </div>
+          <div className={styles.notificationList}>
+            {notifications.length === 0 ? (
+              <div className={styles.noNotifications}>No notifications</div>
+            ) : (
+              notifications.map((notification) => (
+                <div
+                  key={notification.id}
+                  className={`${styles.notificationItem} ${
+                    notification.read ? styles.read : styles.unread
+                  }`}
+                  onClick={() => markAsRead(notification.id)}
+                >
+                  <div className={styles.notificationContent}>
+                    <p>{notification.message}</p>
+                    <span className={styles.notificationTime}>
+                      {new Date(notification.timestamp).toLocaleTimeString()}
+                    </span>
+                  </div>
+                  {!notification.read && (
+                    <div className={styles.unreadDot}></div>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      )}
+
       <div className={styles.container}>
         <div className={styles.cardsContainer}>
           <div className={`${styles.card} ${styles.cardBg1}`}>
